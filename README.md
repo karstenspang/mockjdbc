@@ -1,6 +1,6 @@
 # mockjdbc
 A mock JDBC driver delegating to a real JDBC driver, with the
-possibility of simulating errors.
+possibility of simulating errors. 
 
 **To be implemented**
 
