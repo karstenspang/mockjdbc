@@ -7,28 +7,32 @@ import java.util.Spliterator;
 /**
  * A program is an {@link Iterable} returning {@link Step}s.
  * If the defined list is exhausted, {@link PassThruStep}s
- * are returned.
+ * are returned by {@link Iterator#next} of the {@link Iterator}
+ * returned by {@link #iterator}.
  * <p>
- * Note: Do not iterate over all elements. This will run forever.
- * Consequently, {@link #forEach}, {@link #spliterator}, and
- * {@link Iterator#forEachRemaining} of the returned {@link Iterator}
- * all throw {@link UnsupportedOperationException}.
+ * Note: Since indefinitely many steps are returned by
+ * {@link Iterator#next}, the methods
+ * {@link #forEach}, {@link #spliterator}, and
+ * {@link Iterator#forEachRemaining} and {@link Iterator#hasNext}
+ * of the returned {@link Iterator}
+ * only take the supplied steps into account.
  */
-public class Program<T> implements Iterable<Step<? extends T>> {
-    private Iterable<Step<? extends T>> rawProgram;
-    public Program(Iterable<Step<? extends T>> rawProgram){
+public class Program<T> implements Iterable<Step<T>> {
+    private Iterable<Step<T>> rawProgram;
+    public Program(Iterable<Step<T>> rawProgram){
         this.rawProgram=rawProgram;
     }
     
-    public Iterator<Step<? extends T>> iterator(){
-        return new IteratorExtender<Step<? extends T>>(rawProgram.iterator(),PassThruStep.<T>instance());
+    @Override
+    public Iterator<Step<T>> iterator(){
+        return new IteratorExtender<Step<T>>(rawProgram.iterator(),PassThruStep.<T>instance());
     }
     
     private static class IteratorExtender<U> implements Iterator<U>
     {
-        private Iterator<? extends U> rawIterator;
+        private Iterator<U> rawIterator;
         private U tailValue;
-        public IteratorExtender(Iterator<? extends U> rawIterator,U tailvalue){
+        public IteratorExtender(Iterator<U> rawIterator,U tailvalue){
             this.rawIterator=rawIterator;
             this.tailValue=tailValue;
         }
@@ -42,17 +46,23 @@ public class Program<T> implements Iterable<Step<? extends T>> {
     
         @Override
         public void forEachRemaining​(Consumer<? super U> action){
-            throw new UnsupportedOperationException();
+            rawIterator.forEachRemaining(action);
         }
     }
     
     @Override
-    public void forEach​(Consumer<? super Step<? extends T>> action){
-        throw new UnsupportedOperationException();
+    public void forEach​(Consumer<? super Step<T>> action){
+        rawProgram.forEach(action);
     }
     
     @Override
-    public Spliterator<Step<? extends T>> spliterator(){
-        throw new UnsupportedOperationException();
+    public Spliterator<Step<T>> spliterator(){
+        return rawProgram.spliterator();
+    }
+    
+    @Override
+    public String toString(){
+        return super.toString()+
+        "{rawProgram:"+String.valueOf(rawProgram)+"}";
     }
 }

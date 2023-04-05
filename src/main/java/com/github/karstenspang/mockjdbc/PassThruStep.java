@@ -3,7 +3,7 @@ package com.github.karstenspang.mockjdbc;
 import java.sql.SQLException;
 
 /**
- * {@link Step} that returns the suplied value.
+ * {@link Step} that returns the supplied value.
  * @param <T> The type returned
  */
 public class PassThruStep<T> implements Step<T> {
