@@ -11,6 +11,7 @@ public class PassThruStep<T> implements Step<T> {
     
     /**
      * Get (the only) instance.
+     * @param <U> The type to be returned
      * @return the instance
      */
     @SuppressWarnings("unchecked")

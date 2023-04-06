@@ -10,8 +10,9 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -23,7 +24,7 @@ import java.util.regex.Pattern;
  * will be opened by {@link DriverManager} with the resulting URL.
  */
 public class MockDriver implements Driver {
-    private static final String pomPropertiesFile="META-INF/maven/com.github.karstenspang/mockjdbc/pom.properites";
+    private static final String pomPropertiesFile="META-INF/maven/com.github.karstenspang/mockjdbc/pom.properties";
     private static final Logger logger=Logger.getLogger(MockDriver.class.getName());
     private static final MockDriver instance;
     private static final Iterator<Step<Connection>> emptySteps;
@@ -36,17 +37,19 @@ public class MockDriver implements Driver {
             DriverManager.registerDriver(instance);
         }
         catch(SQLException|IOException e){
+            // Not expected to happen
             throw new RuntimeException(e);
         }
-        emptySteps=new Program<Connection>(List.of()).iterator();
+        emptySteps=new Program<Connection>(Collections.emptyList()).iterator();
     }
     @Override
     public Connection connect​(final String url,final Properties info)
         throws SQLException
     {
         if (!url.startsWith("jdbc:mock:")) return null;
-        final String newUrl="jdbc:"+url.split(":",2)[2];
-        return steps.next().apply(()->DriverManager.getConnection(newUrl,info));
+        final String newUrl="jdbc:"+url.split(":",3)[2];
+        Step<Connection> step=steps.next();
+        return step.apply(()->DriverManager.getConnection(newUrl,info));
     }
     @Override
     public boolean acceptsURL​(String url){return url.startsWith("jdbc:mock:");}
@@ -64,9 +67,17 @@ public class MockDriver implements Driver {
     private MockDriver()
         throws IOException
     {
+        this(pomPropertiesFile);
+    }
+    
+    MockDriver(String propertyFile)
+        throws IOException
+    {
         steps=emptySteps;
-        Properties pomProperties=loadProperties(pomPropertiesFile);
+        Properties pomProperties=loadProperties(propertyFile);
+        logger.fine("pomProperties:"+String.valueOf(pomProperties));
         int[] versionParts=extractVersion(pomProperties.getProperty("version"));
+        logger.fine("versionParts:"+Arrays.toString(versionParts));
         majorVersion=versionParts.length>=1?versionParts[0]:0;
         minorVersion=versionParts.length>=2?versionParts[1]:0;
     }
@@ -86,6 +97,7 @@ public class MockDriver implements Driver {
     {
         Properties props=new Properties();
         ClassLoader loader=Thread.currentThread().getContextClassLoader();
+        // Never null with OpenJDK
         if (loader==null) loader=ClassLoader.getSystemClassLoader();
         InputStream stream=loader.getResourceAsStream(fileName);
         if (stream==null) throw new IOException("Could not open resource "+fileName);

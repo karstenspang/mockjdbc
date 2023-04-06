@@ -30,9 +30,9 @@ public class Program<T> implements Iterable<Step<T>> {
     
     private static class IteratorExtender<U> implements Iterator<U>
     {
-        private Iterator<U> rawIterator;
-        private U tailValue;
-        public IteratorExtender(Iterator<U> rawIterator,U tailvalue){
+        private final Iterator<U> rawIterator;
+        private final U tailValue;
+        public IteratorExtender(Iterator<U> rawIterator,U tailValue){
             this.rawIterator=rawIterator;
             this.tailValue=tailValue;
         }
