@@ -1,4 +1,4 @@
-package com.github.karstenspang.mockjdbc;
+package io.github.karstenspang.mockjdbc;
 
 import java.sql.SQLException;
 import java.util.function.Supplier;

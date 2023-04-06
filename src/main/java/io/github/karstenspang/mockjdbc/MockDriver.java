@@ -1,4 +1,4 @@
-package com.github.karstenspang.mockjdbc;
+package io.github.karstenspang.mockjdbc;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * will be opened by {@link DriverManager} with the resulting URL.
  */
 public class MockDriver implements Driver {
-    private static final String pomPropertiesFile="META-INF/maven/com.github.karstenspang/mockjdbc/pom.properties";
+    private static final String pomPropertiesFile="META-INF/maven/io.github.karstenspang/mockjdbc/pom.properties";
     private static final Logger logger=Logger.getLogger(MockDriver.class.getName());
     private static final MockDriver instance;
     private static final Iterator<Step<Connection>> emptySteps;

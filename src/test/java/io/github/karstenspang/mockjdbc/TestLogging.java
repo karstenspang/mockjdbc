@@ -1,4 +1,4 @@
-package com.github.karstenspang.mockjdbc;
+package io.github.karstenspang.mockjdbc;
 
 import java.util.logging.Level;
 import java.util.logging.LogManager;

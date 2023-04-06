@@ -23,9 +23,9 @@
  * In accordance with the standard for JDBC,
  * the driver uses {@code java.util.logging}.
  * All loggers are children of the logger named
- * {@code com.github.karstenspang.mockjdbc}.
+ * {@code io.github.karstenspang.mockjdbc}.
  */
-package com.github.karstenspang.mockjdbc;
+package io.github.karstenspang.mockjdbc;
 
 import java.sql.Connection;
 import java.sql.Statement;

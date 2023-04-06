@@ -1,4 +1,4 @@
-package com.github.karstenspang.mockjdbc;
+package io.github.karstenspang.mockjdbc;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -101,7 +101,7 @@ public class MockDriverTest {
     public void testParentLogger()
     {
         MockDriver driver=new MockDriver("test1.pom.properties");
-        assertEquals("com.github.karstenspang.mockjdbc",driver.getParentLogger().getName());
+        assertEquals("io.github.karstenspang.mockjdbc",driver.getParentLogger().getName());
     }
     
     @Test
