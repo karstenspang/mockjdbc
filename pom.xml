@@ -208,6 +208,9 @@
             <project.build.directory>${project.build.directory</project.build.directory>
           </systemPropertyVariables>
           <!--<testFailureIgnore>true</testFailureIgnore>-->
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
         </configuration>
       </plugin>
     </plugins>

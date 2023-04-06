@@ -10,8 +10,8 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
-import java.util.Properties;
 import java.util.Arrays;
+import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +25,7 @@ public class MockDriverTest {
         throws ClassNotFoundException
     {
         Class.forName("org.h2.Driver");
+        TestLogging.setup();
     }
     
     @Test
