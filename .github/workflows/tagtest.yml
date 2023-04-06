@@ -1,7 +1,8 @@
 name: Java CI with Maven
 
 on:
-  tag:
+  push:
+    tags: *
 
 jobs:
   build:
