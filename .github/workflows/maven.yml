@@ -28,7 +28,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B verify --file pom.xml -Drevision=${{ env.GITHUB_REF_NAME }}-SNAPSHOT
+      run: mvn -B verify --file pom.xml -Drevision=${{ GITHUB_REF_NAME }}-SNAPSHOT
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     #- name: Update dependency graph
