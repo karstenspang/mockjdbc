@@ -29,4 +29,13 @@ public class ExceptionStep<T> implements Step<T> {
     {
         throw exception;
     }
+    
+    /**
+     * The string represetation of the step
+     * @return the string represetation
+     */
+    public String toString(){
+        return super.toString()+
+            "{exception:"+String.valueOf(exception)+"}";
+    }
 }

@@ -1,21 +1,20 @@
 package com.github.karstenspang.mockjdbc;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import uk.org.lidalia.slf4jtest.LoggingEvent;
+import uk.org.lidalia.slf4jtest.TestLogger;
+import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
 public class MockDriverTest {
     
@@ -31,7 +30,6 @@ public class MockDriverTest {
     @Test
     @DisplayName("Major and minor version can be extracted from pom.properties")
     public void testVersion()
-        throws IOException
     {
         MockDriver driver=new MockDriver("test1.pom.properties");
         assertEquals(42,driver.getMajorVersion());
@@ -39,17 +37,25 @@ public class MockDriverTest {
     }
     
     @Test
-    @DisplayName("pom.properties missing throws IOException")
+    @DisplayName("If pom.properties is missing, major and minor versions are 0")
     public void testNoPomProperties()
-        throws IOException
     {
-        assertThrows(IOException.class,()->new MockDriver("nosuchfile"));
+        TestLogger drvLogger=TestLoggerFactory.getTestLogger(MockDriver.class);
+        drvLogger.clear();
+        MockDriver driver=new MockDriver("nosuchfile");
+        assertEquals(0,driver.getMajorVersion(),"major");
+        assertEquals(0,driver.getMinorVersion(),"minor");
+        List<LoggingEvent> events=drvLogger.getLoggingEvents();
+        List<LoggingEvent> expected=Arrays.asList(
+            LoggingEvent.warn("Could not load property file nosuchfile"),
+            LoggingEvent.info("MockDriver version null")
+        );
+        assertEquals(expected,events,"log");
     }
     
     @Test
-    @DisplayName("If version is not present in pom.properties major and minor versions are 0")
+    @DisplayName("If version is not present in pom.properties, major and minor versions are 0")
     public void testNoVersion()
-        throws IOException
     {
         MockDriver driver=new MockDriver("noversion.pom.properties");
         assertEquals(0,driver.getMajorVersion());
@@ -57,9 +63,8 @@ public class MockDriverTest {
     }
     
     @Test
-    @DisplayName("If version is not numeric in pom.properties major and minor versions are 0")
+    @DisplayName("If version is not numeric in pom.properties, major and minor versions are 0")
     public void testNonNumericVersion()
-        throws IOException
     {
         MockDriver driver=new MockDriver("develop.pom.properties");
         assertEquals(0,driver.getMajorVersion());
@@ -69,7 +74,6 @@ public class MockDriverTest {
     @Test
     @DisplayName("The driver accepts URL's starting with jdbc:mock:")
     public void testAcceptsMock()
-        throws IOException
     {
         MockDriver driver=new MockDriver("test1.pom.properties");
         assertTrue(driver.acceptsURL("jdbc:mock:somedriver"));
@@ -78,7 +82,6 @@ public class MockDriverTest {
     @Test
     @DisplayName("The driver does not accepts URL's not starting with jdbc:mock:")
     public void testRejectsNoMock()
-        throws IOException
     {
         MockDriver driver=new MockDriver("test1.pom.properties");
         assertFalse(driver.acceptsURL("mock:somedriver"));
@@ -87,7 +90,7 @@ public class MockDriverTest {
     @Test
     @DisplayName("connect returns null for URL's not starting with jdbc:mock:")
     public void testReturnsNullNoMock()
-        throws IOException,SQLException
+        throws SQLException
     {
         MockDriver driver=new MockDriver("test1.pom.properties");
         assertNull(driver.connect("mock:somedriver",new Properties()));
@@ -96,7 +99,6 @@ public class MockDriverTest {
     @Test
     @DisplayName("Parent logger has the expected name")
     public void testParentLogger()
-        throws IOException
     {
         MockDriver driver=new MockDriver("test1.pom.properties");
         assertEquals("com.github.karstenspang.mockjdbc",driver.getParentLogger().getName());
@@ -105,7 +107,6 @@ public class MockDriverTest {
     @Test
     @DisplayName("Parent claims to be JDBC compliant")
     public void testJdbcCompliant()
-        throws IOException
     {
         MockDriver driver=new MockDriver("test1.pom.properties");
         assertTrue(driver.jdbcCompliant());
@@ -114,7 +115,6 @@ public class MockDriverTest {
     @Test
     @DisplayName("Driver has no properties")
     public void testDriverProperties()
-        throws IOException
     {
         MockDriver driver=new MockDriver("test1.pom.properties");
         assertArrayEquals(new DriverPropertyInfo[0],driver.getPropertyInfo("url",new Properties()));
@@ -123,7 +123,7 @@ public class MockDriverTest {
     @Test
     @DisplayName("Program with one exception throws exception at first call and succeeds at second")
     public void testOneException()
-        throws IOException,SQLException
+        throws SQLException
     {
         SQLException myex=new SQLException("my exception");
         ExceptionStep<Connection> step=new ExceptionStep<>(myex);
@@ -137,9 +137,18 @@ public class MockDriverTest {
     @Test
     @DisplayName("Empty program succeeds")
     public void testEmptyProgram()
-        throws IOException,SQLException
+        throws SQLException
     {
         MockDriver.setProgram(null);
         try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties())){}
+    }
+    
+    @Test
+    @DisplayName("Self-referencing URL throws IllegalArgumentException")
+    public void testSelfRefence()
+        throws SQLException
+    {
+        MockDriver.setProgram(null);
+        assertThrows(IllegalArgumentException.class,()->DriverManager.getConnection("jdbc:mock:mock:",new Properties()));
     }
 }

@@ -32,27 +32,58 @@ public class MockDriver implements Driver {
     private final int majorVersion;
     private final int minorVersion;
     static{
+        instance=new MockDriver();
         try{
-            instance=new MockDriver();
             DriverManager.registerDriver(instance);
         }
-        catch(SQLException|IOException e){
-            // Not expected to happen
+        // Not expected to happen
+        catch(SQLException e){
             throw new RuntimeException(e);
         }
         emptySteps=new Program<Connection>(Collections.emptyList()).iterator();
     }
+    
+    /**
+     * Set the program of the driver. Initially, the program
+     * is one that always returns {@link PassThruStep}.
+     * Since the program is static, test cases involving
+     * {@link MockDriver} can not be run in parallel.
+     * @param program Program to use. If {@code null},
+     *        the initial program is reinstated.
+     */
+    public static void setProgram(Program<Connection> program){
+        logger.fine("Setting program "+String.valueOf(program));
+        instance.steps=program==null?emptySteps:program.iterator();
+    }
+    
+    /**
+     * Takes an URL of the form {@code jdbc:mock:restofurl}, and
+     * converts it into {@code jdbc:restofurl}, passing that to
+     * {@link DriverManager#getConnection(String,Properties)}.
+     * This can be intercepted by a {@link Program}.
+     * @param url The JDBC mock URL.
+     * @param info Additional info to be passed to the real driver.
+     * @return Connection to the real driver, {@code null} if {@code url}
+     *         is does not start with {@code jdbc:mock:}.
+     * @throws SQLException if the program dictates it, or connecting
+     *         using the real driver fails.
+     * @throws IllegalArgumentException if {@code url} starts with
+     *         {@code "jdbc:mock:mock:"}.
+     */
     @Override
     public Connection connect​(final String url,final Properties info)
         throws SQLException
     {
-        if (!url.startsWith("jdbc:mock:")) return null;
+        logger.fine("connect("+String.valueOf(url)+","+String.valueOf(info)+")");
+        if (!isOurUrl(url)) return null;
         final String newUrl="jdbc:"+url.split(":",3)[2];
+        if (isOurUrl(newUrl)) throw new IllegalArgumentException("Self referencing URL: "+url);
         Step<Connection> step=steps.next();
+        logger.fine("Applying "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+","+String.valueOf(info)+")");
         return step.apply(()->DriverManager.getConnection(newUrl,info));
     }
     @Override
-    public boolean acceptsURL​(String url){return url.startsWith("jdbc:mock:");}
+    public boolean acceptsURL​(String url){return isOurUrl(url);}
     @Override
     public int getMajorVersion(){return majorVersion;}
     @Override
@@ -65,31 +96,31 @@ public class MockDriver implements Driver {
     public boolean jdbcCompliant(){return true;}
     
     private MockDriver()
-        throws IOException
     {
         this(pomPropertiesFile);
     }
     
+    // For testing methods other than connect
     MockDriver(String propertyFile)
-        throws IOException
     {
         steps=emptySteps;
-        Properties pomProperties=loadProperties(propertyFile);
-        logger.fine("pomProperties:"+String.valueOf(pomProperties));
+        Properties pomProperties;
+        try {
+            pomProperties=loadProperties(propertyFile);
+        }
+        catch(IOException e){
+            logger.warning("Could not load property file "+String.valueOf(propertyFile));
+            pomProperties=new Properties();
+        }
+        
+        logger.info("MockDriver version "+String.valueOf(pomProperties.getProperty("version")));
         int[] versionParts=extractVersion(pomProperties.getProperty("version"));
-        logger.fine("versionParts:"+Arrays.toString(versionParts));
         majorVersion=versionParts.length>=1?versionParts[0]:0;
         minorVersion=versionParts.length>=2?versionParts[1]:0;
     }
     
-    /**
-     * Set the program of the driver. Initially, the program
-     * is one that always returns {@link PassThruStep}.
-     * @param program Program to use. If {@code null},
-     *        the initial program is reinstated.
-     */
-    public static void setProgram(Program<Connection> program){
-        instance.steps=program==null?emptySteps:program.iterator();
+    private static boolean isOurUrl(String url){
+        return url.startsWith("jdbc:mock:");
     }
     
     private static Properties loadProperties(String fileName)
