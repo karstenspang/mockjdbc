@@ -2,7 +2,7 @@ name: Java CI with Maven
 
 on:
   push:
-    tags: *
+    tags
 
 jobs:
   build:
