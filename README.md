@@ -45,7 +45,13 @@ Now you want to handle this by waiting a bit and trying again if this error
 is encountered, but not too many times. This could e.g. be
 ```
 public class Connector {
-    public static Connection getConnection(String url,String user,String password,int maxFails,long sleepTime)
+    public static Connection getConnection(
+        String url,
+        String user,
+        String password,
+        int maxFails,
+        long sleepTime
+    )
         throws SQLException,InterruptedException
     {
         int fails=0;
@@ -56,7 +62,7 @@ public class Connector {
             catch(SQLException ex){
                 if (fail>maxFails) throw ex;
                 int code=ex.getErrorCode();
-                if (code!=12520) throws ex;
+                if (code!=12520) throw ex;
             }
             fails++;
             Thread.sleep(sleepTime);
