@@ -1,20 +1,38 @@
 [![develop build](https://github.com/karstenspang/mockjdbc/actions/workflows/maven.yml/badge.svg?branch=develop)](https://github.com/karstenspang/mockjdbc/actions/workflows/maven.yml?query=branch%3Adevelop)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.karstenspang/mockjdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.karstenspang/mockjdbc)
 [![javadoc](https://javadoc.io/badge2/io.github.karstenspang/mockjdbc/javadoc.svg)](https://javadoc.io/doc/io.github.karstenspang/mockjdbc)
+
 # mockjdbc
 A mock JDBC driver delegating to a real JDBC driver, with the
-possibility of simulating errors. 
+possibility of simulating errors for testing purposes.
 
 The driver is a wrapper around a real JDBC Driver, simulating SQL errors.
 The driver is controlled by a program, for example
 "return a connection the first two times, fail on the third".
 
 **To be implemented**
-The returned connections themselves are wrappers controlled by
+The returned connections themselves can be wrappers controlled by
 a program, that can cause e.g. `Connection.createStatement()`
-to fail on the second attempt. The returned statements are again
-wrappers around `Statement` controlled by a program, etc.
+to fail on the second attempt. The returned statements again
+can be wrappers around `Statement` controlled by a program, etc.
 
+## Java and JDBC versions
+For maximum usefullness,
+I have decided to build this with Java 8, and thus the wrappers
+will implement only what is in JDBC 4.1. If used with java 9 and
+higher, new methods introduced in 4.2 will have their default
+implementation in the wrappers.
+
+## Dependency information
+To use for unit testing in Maven, add the following to you POM:
+```
+<dependency>
+  <groupId>io.github.karstenspang</groupId>
+  <artifactId>mockjdbc</artifactId>
+  <version>0.1.0</version>
+  <scope>test</scope>
+</dependency>
+```
 ## Example
 Let's say you have an Oracle database that sometimes have too many
 connections, and for that reason, connecting fails with
@@ -47,13 +65,13 @@ public class Connector {
 So, how to test this? You could of course arrange the database to have too
 many connecions, and then try to connect, but good luck automating that!
 
-A Junit 5 test case that tests that if the connection fails once and then
-succeeds, you will get a connection could be:
+A Junit 5 test case where the connection fails once and then
+succeeds, could be:
 ```
-import com.github.karstenspang.mockjdbc.ExceptionStep;
-import com.github.karstenspang.mockjdbc.MockDriver;
-import com.github.karstenspang.mockjdbc.passThruStep;
-import com.github.karstenspang.mockjdbc.Program;
+import io.github.karstenspang.mockjdbc.ExceptionStep;
+import io.github.karstenspang.mockjdbc.MockDriver;
+import io.github.karstenspang.mockjdbc.PassThruStep;
+import io.github.karstenspang.mockjdbc.Program;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeAll;
@@ -86,9 +104,12 @@ public class ConnectorTest {
     }
 }
 ```
-The H2 in-memory database is used for unit testing, since we don't need
+[The H2 in-memory database](https://www.h2database.com/)
+is used for unit testing, since we don't need
 an actual database in this case. It seems that surefire don't always get
 the driver loaded, so we do this explicitly.
 
 It is not neccessary to include the second step, since the program will
 return a `PassThruStep` if called after the list of steps is exhausted.
+
+For details, see [the javadoc](https://javadoc.io/doc/io.github.karstenspang/mockjdbc).
