@@ -131,7 +131,8 @@ public class MockDriverTest {
         MockDriver.setProgram(program);
         SQLException ex=assertThrows(SQLException.class,()->DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties()));
         assertEquals(myex,ex);
-        try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties())){}
+        Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties());
+        conn.close();
     }
     
     @Test
@@ -140,7 +141,8 @@ public class MockDriverTest {
         throws SQLException
     {
         MockDriver.setProgram(null);
-        try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties())){}
+        Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties());
+        conn.close();
     }
     
     @Test
