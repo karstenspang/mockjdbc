@@ -9,9 +9,9 @@
 name: Develop build
 
 on:
-  push
+  push:
     branches: [ "develop" ]
-  pull_request
+  pull_request:
     branches: [ "develop" ]
 
 jobs:
