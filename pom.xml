@@ -7,9 +7,8 @@
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
   <version>${revision}</version>
-
   <name>Mock JDBC Driver</name>
-  <description>A JDBC driver that wraps around a real JDBC driver, allowing the injection of errors.</description>
+  <description>A JDBC driver that wraps around a real JDBC driver, allowing the injection of errors for testing purposes.</description>
   <url>https://github.com/karstenspang/mockjdbc</url>
   <licenses>
     <license>
@@ -17,6 +16,20 @@
       <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
+  <scm>
+    <connection>scm:git:https://github.com/karstenspang/mockjdbc.git</connection>
+    <developerConnection>scm:git:https://github.com/karstenspang/mockjdbc.git</developerConnection>
+    <url>https://github.com/karstenspang/mockjdbc</url>
+  </scm>
+  <developers>
+    <developer>
+      <name>Karsten Spang</name>
+      <email>karstenspang@gmail.com</email>
+      <id>karstenspang</id>
+      <organization>GitHub</organization>
+      <organizationUrl>https://github.com/karstenspang</organizationUrl>
+    </developer>
+  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -195,11 +208,13 @@
           <artifactId>flatten-maven-plugin</artifactId>
           <version>1.4.1</version>
           <configuration>
-            <pomElements>
-              <name>keep</name>
-              <url>resolve</url>
-            </pomElements>
+            <flattenMode>ossrh</flattenMode>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.2.1</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -283,6 +298,17 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <reporting>
@@ -338,4 +364,59 @@
       </plugin>
     </plugins>
   </reporting>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <!-- The key's name & passphrase are configured via GitHub's setup-java action. -->
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-gpg-plugin</artifactId>
+              <version>3.0.1</version>
+              <executions>
+                <execution>
+                  <id>sign-artifacts</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>sign</goal>
+                  </goals>
+                  <configuration>
+                    <!-- This is required to make sure the plugin does not stop asking for -->
+                    <!-- user input on the passphrase -->
+                    <gpgArguments>
+                      <arg>--pinentry-mode</arg>
+                      <arg>loopback</arg>
+                    </gpgArguments>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+            <plugin>
+              <groupId>org.sonatype.plugins</groupId>
+              <artifactId>nexus-staging-maven-plugin</artifactId>
+              <version>1.6.13</version>
+              <extensions>true</extensions>
+              <configuration>
+                <serverId>ossrh</serverId>
+                <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
+                <autoReleaseAfterClose>true</autoReleaseAfterClose>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
