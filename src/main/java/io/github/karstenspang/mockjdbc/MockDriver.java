@@ -21,7 +21,8 @@ import java.util.regex.Pattern;
 /**
  * {@link Driver} that accepts URL's starting with {@code jdbc:mock:}.
  * The rest of the URL will be prepended by {@code jdbc:} and a connection
- * will be opened by {@link DriverManager} with the resulting URL.
+ * will be opened by {@link DriverManager} with the resulting URL,
+ * unless intercepted.
  */
 public class MockDriver implements Driver {
     private static final String pomPropertiesFile="META-INF/maven/io.github.karstenspang/mockjdbc/pom.properties";
@@ -45,7 +46,8 @@ public class MockDriver implements Driver {
     
     /**
      * Set the program of the driver. Initially, the program
-     * is one that always returns {@link PassThruStep}.
+     * is one that always returns {@link PassThruStep}, in
+     * other words, real {@link Connection}s are returned.
      * Since the program is static, test cases involving
      * {@link MockDriver} can not be run in parallel.
      * @param program Program to use. If {@code null},

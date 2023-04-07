@@ -1,8 +1,10 @@
 package io.github.karstenspang.mockjdbc;
 
-import java.util.function.Consumer;
+import java.sql.Connection;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Spliterator;
+import java.util.function.Consumer;
 
 /**
  * A program is an {@link Iterable} returning {@link Step}s.
@@ -16,13 +18,29 @@ import java.util.Spliterator;
  * {@link Iterator#forEachRemaining} and {@link Iterator#hasNext}
  * of the returned {@link Iterator}
  * only take the supplied steps into account.
+ * @param <T> The type returned by the {@link Step}s of the program.
+ *            For example, the program used by the {@link MockDriver}
+ *            is a {@link Program}&lt;{@link Connection}&gt;.
  */
 public class Program<T> implements Iterable<Step<T>> {
     private Iterable<Step<T>> rawProgram;
+    
+    /**
+     * Construct the program from steps.
+     * @param rawProgram the steps
+     */
     public Program(Iterable<Step<T>> rawProgram){
         this.rawProgram=rawProgram;
     }
     
+    /**
+     * Iterator over the program. The iterator has the twist
+     * that {@link Iterator#next} keeps on returning
+     * {@link PassThruStep}s, even if {@link Iterator#hasNext}
+     * returns {@code false}, and thus never throws
+     * {@link NoSuchElementException}.
+     * @return The iterator
+     */
     @Override
     public Iterator<Step<T>> iterator(){
         return new IteratorExtender<Step<T>>(rawProgram.iterator(),PassThruStep.<T>instance());
@@ -50,16 +68,30 @@ public class Program<T> implements Iterable<Step<T>> {
         }
     }
     
+    /**
+     * Performs the given action for each element of the
+     * raw program supplied to the constructor.
+     * @param action The action to be performed for each element
+     */
     @Override
     public void forEach​(Consumer<? super Step<T>> action){
         rawProgram.forEach(action);
     }
     
+    /**
+     * Creates a {@link Spliterator} over the elements described by
+     * the raw program supplied to the constructor.
+     * @return the spliterator
+     */
     @Override
     public Spliterator<Step<T>> spliterator(){
         return rawProgram.spliterator();
     }
     
+    /**
+     * The string represetation of the program.
+     * @return the string represetation
+     */
     @Override
     public String toString(){
         return super.toString()+

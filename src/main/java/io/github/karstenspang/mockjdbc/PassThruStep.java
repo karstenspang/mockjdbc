@@ -1,10 +1,14 @@
 package io.github.karstenspang.mockjdbc;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * {@link Step} that returns the supplied value.
- * @param <T> The type returned
+ * {@link Step} used when the {@link Program} is to call a
+ * method in the real driver.
+ * @param <T> The type returned.
+ *            For example, the {@link MockDriver}
+ *            uses steps that return a {@link Connection}.
  */
 public class PassThruStep<T> implements Step<T> {
     private static PassThruStep<?> instance=new PassThruStep<>();

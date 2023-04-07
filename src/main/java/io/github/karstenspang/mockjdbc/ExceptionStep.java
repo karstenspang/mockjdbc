@@ -3,7 +3,7 @@ package io.github.karstenspang.mockjdbc;
 import java.sql.SQLException;
 
 /**
- * {@link Step} that throws the exception supplied to the constructor.
+ * {@link Step} used when the {@link Program} needs to throw an exception.
  * @param <T> The type returned
  */
 public class ExceptionStep<T> implements Step<T> {
@@ -19,8 +19,8 @@ public class ExceptionStep<T> implements Step<T> {
     }
     
     /**
-     * Throw the supplied exception
-     * @param supplier Not used
+     * Throw the exception supplied to the constructor.
+     * @param supplier Not called
      * @return None
      * @throws SQLException as requested.
      */
