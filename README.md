@@ -19,8 +19,8 @@ can be wrappers around `Statement` controlled by a program, etc.
 ## Java and JDBC versions
 For maximum usefullness,
 I have decided to build this with Java 8, and thus the wrappers
-will implement only what is in JDBC 4.1. If used with java 9 and
-higher, new methods introduced in 4.2 will have their default
+will implement only what is in JDBC 4.2. If used with java 9 and
+higher, new methods introduced in 4.3 will have their default
 implementation in the wrappers.
 
 ## Dependency information
