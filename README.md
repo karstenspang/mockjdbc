@@ -22,7 +22,7 @@ I have decided to build this with Java 8, and thus the wrappers
 will implement only what is in JDBC 4.2. If used with java 9 and
 higher, new methods introduced in 4.3 will have their default
 implementation in the wrappers, even if the wrapped driver has
-overridden the deafult.
+overridden the default implementation.
 
 ## Dependency information
 To use for unit testing in Maven, add the following to you POM:
