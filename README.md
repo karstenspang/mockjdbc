@@ -71,7 +71,7 @@ public class Connector {
 }
 ```
 So, how to test this? You could of course arrange the database to have too
-many connecions, and then try to connect, but good luck automating that!
+many connections, and then try to connect, but good luck automating that!
 
 A Junit 5 test case where the connection fails once and then
 succeeds, could be:
