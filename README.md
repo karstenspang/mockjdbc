@@ -1,3 +1,5 @@
+[![develop build](https://github.com/karstenspang/mockjdbc/actions/workflows/maven.yml/badge.svg?branch=develop)](https://github.com/karstenspang/mockjdbc/actions/workflows/maven.yml?query=branch%3Adevelop)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.karstenspang/mockjdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.karstenspang/mockjdbc)
 # mockjdbc
 A mock JDBC driver delegating to a real JDBC driver, with the
 possibility of simulating errors. 
