@@ -79,7 +79,6 @@ succeeds, could be:
 import io.github.karstenspang.mockjdbc.ExceptionStep;
 import io.github.karstenspang.mockjdbc.MockDriver;
 import io.github.karstenspang.mockjdbc.PassThruStep;
-import io.github.karstenspang.mockjdbc.Program;
 import java.sql.Connection;
 import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeAll;
@@ -103,10 +102,9 @@ public class ConnectorTest {
         // the error that we want to test, and the second step simply
         // passes the connction request to the wrapped URL.
         SQLException ex=new SQLException("db overloaded","00000",12520);
-        ExceptionStep<Connection> step1=new ExceptionStep<>(ex);
-        PassThruStep<Connection> step2=PassThruStep.instance();
-        Program<Connection> program=new Program<>(List.of(step1,step2));
-        MockDriver.setProgram(program);
+        ExceptionStep step1=new ExceptionStep(ex);
+        PassThruStep step2=PassThruStep.instance();
+        MockDriver.setProgram(List.of(step1,step2));
         // Run the test
         try(Connection conn=Connector.getConnection("jdbc:mock:h2:mem:","user","pwd",2,0L)){}
     }

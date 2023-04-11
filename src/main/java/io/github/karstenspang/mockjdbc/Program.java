@@ -17,19 +17,16 @@ import java.util.function.Consumer;
  * {@link #forEach}, {@link #spliterator}, and
  * {@link Iterator#forEachRemaining} and {@link Iterator#hasNext}
  * of the returned {@link Iterator}
- * only take the supplied steps into account.
- * @param <T> The type returned by the {@link Step}s of the program.
- *            For example, the program used by the {@link MockDriver}
- *            is a {@link Program}&lt;{@link Connection}&gt;.
+ * only take the steps supplied to the constructor into account.
  */
-public class Program<T> implements Iterable<Step<T>> {
-    private Iterable<Step<T>> rawProgram;
+public class Program implements Iterable<Step> {
+    private Iterable<Step> rawProgram;
     
     /**
      * Construct the program from steps.
      * @param rawProgram the steps
      */
-    public Program(Iterable<Step<T>> rawProgram){
+    public Program(Iterable<Step> rawProgram){
         this.rawProgram=rawProgram;
     }
     
@@ -42,8 +39,8 @@ public class Program<T> implements Iterable<Step<T>> {
      * @return The iterator
      */
     @Override
-    public Iterator<Step<T>> iterator(){
-        return new IteratorExtender<Step<T>>(rawProgram.iterator(),PassThruStep.<T>instance());
+    public Iterator<Step> iterator(){
+        return new IteratorExtender<Step>(rawProgram.iterator(),PassThruStep.instance());
     }
     
     private static class IteratorExtender<U> implements Iterator<U>
@@ -74,7 +71,7 @@ public class Program<T> implements Iterable<Step<T>> {
      * @param action The action to be performed for each element
      */
     @Override
-    public void forEach​(Consumer<? super Step<T>> action){
+    public void forEach​(Consumer<? super Step> action){
         rawProgram.forEach(action);
     }
     
@@ -84,7 +81,7 @@ public class Program<T> implements Iterable<Step<T>> {
      * @return the spliterator
      */
     @Override
-    public Spliterator<Step<T>> spliterator(){
+    public Spliterator<Step> spliterator(){
         return rawProgram.spliterator();
     }
     

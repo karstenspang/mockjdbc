@@ -18,10 +18,10 @@ public class ProgramTest {
     public void testOneException()
     {
         SQLException myex=new SQLException("my exception");
-        ExceptionStep<Connection> step=new ExceptionStep<>(myex);
-        Program<Connection> program=new Program<>(Arrays.<Step<Connection>>asList(step));
+        ExceptionStep step=new ExceptionStep(myex);
+        Program program=new Program(Arrays.asList(step));
         program.toString();
-        Iterator<Step<Connection>> steps=program.iterator();
+        Iterator<Step> steps=program.iterator();
         assertInstanceOf(ExceptionStep.class,steps.next());
         assertInstanceOf(PassThruStep.class,steps.next());
         assertInstanceOf(PassThruStep.class,steps.next());
@@ -32,8 +32,8 @@ public class ProgramTest {
     public void testOneExceptionForEach()
     {
         SQLException myex=new SQLException("my exception");
-        ExceptionStep<Connection> step=new ExceptionStep<>(myex);
-        Program<Connection> program=new Program<>(Arrays.<Step<Connection>>asList(step));
+        ExceptionStep step=new ExceptionStep(myex);
+        Program program=new Program(Arrays.asList(step));
         final AtomicInteger cnt=new AtomicInteger();
         program.forEach((c)->{cnt.incrementAndGet();});
         assertEquals(1,cnt.get());
@@ -44,8 +44,8 @@ public class ProgramTest {
     public void testOneExceptionForEachRemaining()
     {
         SQLException myex=new SQLException("my exception");
-        ExceptionStep<Connection> step=new ExceptionStep<>(myex);
-        Program<Connection> program=new Program<>(Arrays.<Step<Connection>>asList(step));
+        ExceptionStep step=new ExceptionStep(myex);
+        Program program=new Program(Arrays.asList(step));
         final AtomicInteger cnt=new AtomicInteger();
         program.iterator().forEachRemaining((c)->{cnt.incrementAndGet();});
         assertEquals(1,cnt.get());
@@ -56,8 +56,8 @@ public class ProgramTest {
     public void testOneExceptionSpliterator()
     {
         SQLException myex=new SQLException("my exception");
-        ExceptionStep<Connection> step=new ExceptionStep<>(myex);
-        Program<Connection> program=new Program<>(Arrays.<Step<Connection>>asList(step));
+        ExceptionStep step=new ExceptionStep(myex);
+        Program program=new Program(Arrays.asList(step));
         assertEquals(1,StreamSupport.stream(program.spliterator(),false).count());
     }
     
@@ -66,10 +66,10 @@ public class ProgramTest {
     public void testOneExceptionhasNext()
     {
         SQLException myex=new SQLException("my exception");
-        ExceptionStep<Connection> step=new ExceptionStep<>(myex);
-        Program<Connection> program=new Program<>(Arrays.<Step<Connection>>asList(step));
+        ExceptionStep step=new ExceptionStep(myex);
+        Program program=new Program(Arrays.asList(step));
         int cnt=0;
-        for (Step<Connection> s:program){
+        for (Step s:program){
             cnt++;
         }
         assertEquals(1,cnt);

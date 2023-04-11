@@ -28,8 +28,8 @@ public class MockDriver implements Driver {
     private static final String pomPropertiesFile="META-INF/maven/io.github.karstenspang/mockjdbc/pom.properties";
     private static final Logger logger=Logger.getLogger(MockDriver.class.getName());
     private static final MockDriver instance;
-    private static final Iterator<Step<Connection>> emptySteps;
-    private Iterator<Step<Connection>> steps;
+    private static final Iterator<Step> emptySteps;
+    private Iterator<Step> steps;
     private final int majorVersion;
     private final int minorVersion;
     static{
@@ -41,7 +41,7 @@ public class MockDriver implements Driver {
         catch(SQLException e){
             throw new RuntimeException(e);
         }
-        emptySteps=new Program<Connection>(Collections.emptyList()).iterator();
+        emptySteps=new Program(Collections.emptyList()).iterator();
     }
     
     /**
@@ -53,9 +53,14 @@ public class MockDriver implements Driver {
      * @param program Program to use. If {@code null},
      *        the initial program is reinstated.
      */
-    public static void setProgram(Program<Connection> program){
+    public static void setProgram(Iterable<Step> program){
         logger.fine("Setting program "+String.valueOf(program));
-        instance.steps=program==null?emptySteps:program.iterator();
+        if (program==null){
+            instance.steps=emptySteps;
+        }
+        else{
+            instance.steps=new Program(program).iterator();
+        }
     }
     
     /**
@@ -80,7 +85,7 @@ public class MockDriver implements Driver {
         if (!isOurUrl(url)) return null;
         final String newUrl="jdbc:"+url.split(":",3)[2];
         if (isOurUrl(newUrl)) throw new IllegalArgumentException("Self referencing URL: "+url);
-        Step<Connection> step=steps.next();
+        Step step=steps.next();
         logger.fine("Applying "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+","+String.valueOf(info)+")");
         return step.apply(()->DriverManager.getConnection(newUrl,info));
     }

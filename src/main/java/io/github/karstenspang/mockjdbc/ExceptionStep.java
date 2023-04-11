@@ -4,9 +4,8 @@ import java.sql.SQLException;
 
 /**
  * {@link Step} used when the {@link Program} needs to throw an exception.
- * @param <T> The type returned
  */
-public class ExceptionStep<T> implements Step<T> {
+public class ExceptionStep implements Step {
     SQLException exception;
     
     /**
@@ -20,11 +19,12 @@ public class ExceptionStep<T> implements Step<T> {
     
     /**
      * Throw the exception supplied to the constructor.
+     * @param <T> The type of data returned by the step.
      * @param supplier Not called
      * @return None
      * @throws SQLException as requested.
      */
-    public T apply(SQLSupplier<? extends T> supplier)
+    public <T> T apply(SQLSupplier<? extends T> supplier)
         throws SQLException
     {
         throw exception;

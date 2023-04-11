@@ -126,8 +126,8 @@ public class MockDriverTest {
         throws SQLException
     {
         SQLException myex=new SQLException("my exception");
-        ExceptionStep<Connection> step=new ExceptionStep<>(myex);
-        Program<Connection> program=new Program<>(Arrays.<Step<Connection>>asList(step));
+        ExceptionStep step=new ExceptionStep(myex);
+        List<Step> program=Arrays.asList(step);
         MockDriver.setProgram(program);
         SQLException ex=assertThrows(SQLException.class,()->DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties()));
         assertEquals(myex,ex);
