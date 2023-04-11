@@ -31,7 +31,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.2</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -81,6 +81,7 @@ import io.github.karstenspang.mockjdbc.MockDriver;
 import io.github.karstenspang.mockjdbc.PassThruStep;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
