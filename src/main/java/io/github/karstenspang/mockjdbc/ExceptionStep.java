@@ -3,7 +3,7 @@ package io.github.karstenspang.mockjdbc;
 import java.sql.SQLException;
 
 /**
- * {@link Step} used when the {@link Program} needs to throw an exception.
+ * {@link Step} used when the program needs to throw an exception.
  */
 public class ExceptionStep implements Step {
     SQLException exception;
@@ -25,6 +25,17 @@ public class ExceptionStep implements Step {
      * @throws SQLException as requested.
      */
     public <T> T apply(SQLSupplier<? extends T> supplier)
+        throws SQLException
+    {
+        throw exception;
+    }
+    
+    /**
+     * Throw the exception supplied to the constructor.
+     * @param action Not called.
+     * @throws SQLException as requested.
+     */
+    public void apply(SQLRunnable action)
         throws SQLException
     {
         throw exception;

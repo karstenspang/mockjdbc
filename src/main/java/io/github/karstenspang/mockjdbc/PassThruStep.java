@@ -32,5 +32,16 @@ public class PassThruStep implements Step {
         return supplier.get();
     }
     
+    /**
+     * Performs the specified action
+     * @param action Action to perform
+     * @throws SQLException if {@code action} does.
+     */
+    public void apply(SQLRunnable action)
+        throws SQLException
+    {
+        action.run();
+    }
+    
     private PassThruStep(){}
 }

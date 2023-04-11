@@ -23,4 +23,18 @@ public interface Step {
      */
     <T> T apply(SQLSupplier<? extends T> supplier)
         throws SQLException;
+    
+    /**
+     * Apply an action that does not return a result. Example actions are
+     * <ul>
+     * <li>Call <code>action</code>.</li>
+     * <li>Do something else, or nothing.</li>
+     * <li>Throw an exception.</li>
+     * </ul>
+     * @param action Action to perform. It may or may not be called,
+     *        depending on the implementing step.
+     * @throws SQLException if either {@code action} does, or if the step itself does.
+     */
+    void apply(SQLRunnable action)
+        throws SQLException;
 }
