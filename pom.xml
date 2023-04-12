@@ -10,6 +10,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>mockjdbc</module>
+    <module>wrapgen</module>
   </modules>
   <name>Mock JDBC Driver Parent</name>
   <description>A JDBC driver that wraps around a real JDBC driver, allowing the injection of errors for testing purposes.</description>
@@ -140,7 +141,7 @@
             <systemPropertyVariables>
               <project.groupId>${project.groupId}</project.groupId>
               <project.artifactId>${project.artifactId}</project.artifactId>
-              <project.build.directory>${project.build.directory</project.build.directory>
+              <project.build.directory>${project.build.directory}</project.build.directory>
             </systemPropertyVariables>
             <!--<testFailureIgnore>true</testFailureIgnore>-->
             <includes>
@@ -287,31 +288,26 @@
             <autoReleaseAfterClose>true</autoReleaseAfterClose>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.gmaven</groupId>
+          <artifactId>groovy-maven-plugin</artifactId>
+          <version>2.1.1</version>
+<!--          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-all</artifactId>
+              <version>2.5.22</version>
+            </dependency>
+          </dependencies>-->
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>flatten-maven-plugin</artifactId>
-        <executions>
-          <!-- enable flattening -->
-          <execution>
-            <id>flatten</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>flatten</goal>
-            </goals>
-          </execution>
-          <!-- ensure proper cleanup -->
-          <execution>
-            <id>flatten.clean</id>
-            <phase>clean</phase>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-deploy-plugin</artifactId>
@@ -325,7 +321,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <inherited>false</inherited>
         <executions>
           <execution>
             <id>default-site</id>
