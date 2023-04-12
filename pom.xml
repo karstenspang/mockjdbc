@@ -5,9 +5,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.github.karstenspang</groupId>
-  <artifactId>mockjdbc</artifactId>
+  <artifactId>mockjdbcparent</artifactId>
   <version>${revision}</version>
-  <name>Mock JDBC Driver</name>
+  <packaging>pom</packaging>
+  <modules>
+    <module>mockjdbc</module>
+  </modules>
+  <name>Mock JDBC Driver Parent</name>
   <description>A JDBC driver that wraps around a real JDBC driver, allowing the injection of errors for testing purposes.</description>
   <url>https://github.com/karstenspang/mockjdbc</url>
   <licenses>
@@ -38,33 +42,30 @@
     <revision>0.0.0</revision>
     <surefire.version>3.0.0</surefire.version>
   </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>5.9.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jul-to-slf4j</artifactId>
-      <version>1.7.36</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>uk.org.lidalia</groupId>
-      <artifactId>slf4j-test</artifactId>
-      <version>1.2.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>2.1.214</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.9.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>1.7.36</version>
+      </dependency>
+      <dependency>
+        <groupId>uk.org.lidalia</groupId>
+        <artifactId>slf4j-test</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <version>2.1.214</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <distributionManagement>
     <repository>
       <id>ossrh</id>
@@ -116,6 +117,36 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${surefire.version}</version>
+          <configuration>
+            <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+              <disable>false</disable>
+              <version>3.0</version>
+              <usePhrasedFileName>false</usePhrasedFileName>
+              <usePhrasedTestSuiteClassName>false</usePhrasedTestSuiteClassName>
+              <usePhrasedTestCaseClassName>false</usePhrasedTestCaseClassName>
+              <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+            </statelessTestsetReporter>
+            <consoleOutputReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter">
+              <disable>false</disable>
+              <encoding>UTF-8</encoding>
+              <usePhrasedFileName>false</usePhrasedFileName>
+            </consoleOutputReporter>
+            <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
+              <disable>false</disable>
+              <usePhrasedFileName>false</usePhrasedFileName>
+              <usePhrasedClassNameInRunning>false</usePhrasedClassNameInRunning>
+              <usePhrasedClassNameInTestCaseSummary>false</usePhrasedClassNameInTestCaseSummary>
+            </statelessTestsetInfoReporter>
+            <systemPropertyVariables>
+              <project.groupId>${project.groupId}</project.groupId>
+              <project.artifactId>${project.artifactId}</project.artifactId>
+              <project.build.directory>${project.build.directory</project.build.directory>
+            </systemPropertyVariables>
+            <!--<testFailureIgnore>true</testFailureIgnore>-->
+            <includes>
+              <include>**/*Test.java</include>
+            </includes>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -131,6 +162,7 @@
           <version>3.1.1</version>
         </plugin>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-deploy-plugin</artifactId>
           <version>3.1.1</version>
         </plugin>
@@ -221,6 +253,40 @@
           <artifactId>maven-source-plugin</artifactId>
           <version>3.2.1</version>
         </plugin>
+        <!-- The key's name & passphrase are configured via GitHub's setup-java action. -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.0.1</version>
+          <executions>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+              <configuration>
+                <!-- This is required to make sure the plugin does not stop asking for -->
+                <!-- user input on the passphrase -->
+                <gpgArguments>
+                  <arg>--pinentry-mode</arg>
+                  <arg>loopback</arg>
+                </gpgArguments>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.13</version>
+          <extensions>true</extensions>
+          <configuration>
+            <serverId>ossrh</serverId>
+            <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
+            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -247,181 +313,26 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
         <executions>
           <execution>
-            <id>default-prepare-agent</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
+            <id>default-deploy</id>
+            <phase>none</phase>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
-            <disable>false</disable>
-            <version>3.0</version>
-            <usePhrasedFileName>false</usePhrasedFileName>
-            <usePhrasedTestSuiteClassName>false</usePhrasedTestSuiteClassName>
-            <usePhrasedTestCaseClassName>false</usePhrasedTestCaseClassName>
-            <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
-          </statelessTestsetReporter>
-          <consoleOutputReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter">
-            <disable>false</disable>
-            <encoding>UTF-8</encoding>
-            <usePhrasedFileName>false</usePhrasedFileName>
-          </consoleOutputReporter>
-          <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
-            <disable>false</disable>
-            <usePhrasedFileName>false</usePhrasedFileName>
-            <usePhrasedClassNameInRunning>false</usePhrasedClassNameInRunning>
-            <usePhrasedClassNameInTestCaseSummary>false</usePhrasedClassNameInTestCaseSummary>
-          </statelessTestsetInfoReporter>
-          <systemPropertyVariables>
-            <project.groupId>${project.groupId}</project.groupId>
-            <project.artifactId>${project.artifactId}</project.artifactId>
-            <project.build.directory>${project.build.directory</project.build.directory>
-          </systemPropertyVariables>
-          <!--<testFailureIgnore>true</testFailureIgnore>-->
-          <includes>
-            <include>**/*Test.java</include>
-          </includes>
-        </configuration>
+        <artifactId>maven-site-plugin</artifactId>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>default-site</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>javadoc-no-fork</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <configuration>
-          <linkXRef>false</linkXRef>
-        </configuration>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>report-only</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>report</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>versions-maven-plugin</artifactId>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>dependency-updates-report</report>
-              <report>plugin-updates-report</report>
-              <report>property-updates-report</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
-    </plugins>
-  </reporting>
-  <profiles>
-    <profile>
-      <id>release</id>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <!-- The key's name & passphrase are configured via GitHub's setup-java action. -->
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-gpg-plugin</artifactId>
-              <version>3.0.1</version>
-              <executions>
-                <execution>
-                  <id>sign-artifacts</id>
-                  <phase>verify</phase>
-                  <goals>
-                    <goal>sign</goal>
-                  </goals>
-                  <configuration>
-                    <!-- This is required to make sure the plugin does not stop asking for -->
-                    <!-- user input on the passphrase -->
-                    <gpgArguments>
-                      <arg>--pinentry-mode</arg>
-                      <arg>loopback</arg>
-                    </gpgArguments>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
-            <plugin>
-              <groupId>org.sonatype.plugins</groupId>
-              <artifactId>nexus-staging-maven-plugin</artifactId>
-              <version>1.6.13</version>
-              <extensions>true</extensions>
-              <configuration>
-                <serverId>ossrh</serverId>
-                <nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
-                <autoReleaseAfterClose>true</autoReleaseAfterClose>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>jar-no-fork</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-gpg-plugin</artifactId>
-          </plugin>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
