@@ -4,7 +4,10 @@ import io.github.karstenspang.mockjdbc.ExceptionStep;
 import io.github.karstenspang.mockjdbc.MockDriver;
 import io.github.karstenspang.mockjdbc.PassThruStep;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,12 +16,52 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class WrapperStepTest {
-
+    @BeforeAll
+    static void init()
+        throws ClassNotFoundException
+    {
+        // Make sure the H2 driver is loaded.
+        Class.forName("org.h2.Driver");
+        TestLogging.setup();
+    }
+    
     @Test
     @DisplayName("Wrapping a void method throws IllegalArgumentException")
     public void testWrapVoid()
     {
         WrapperStep<Object> step=new WrapperStep<>(Wrap::new,Collections.emptyList());
         assertThrows(IllegalArgumentException.class,()->step.apply(()->{}));
+    }
+    
+    @Test
+    @DisplayName("Superclass of wrap throws ClassCastException")
+    public void testUp()
+        throws SQLException
+    {
+        MockDriver.setProgram(Arrays.asList(
+            new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList(
+                new WrapperStep<Statement>(StatementWrap::new,Collections.emptyList())
+            ))
+        ));
+        
+        try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:","user","pwd")){
+            assertThrows(ClassCastException.class,()->conn.prepareStatement("select 0"));
+        }
+    }
+    
+    @Test
+    @DisplayName("Subclass of wrap throws ClassCastException")
+    public void testDown()
+        throws SQLException
+    {
+        MockDriver.setProgram(Arrays.asList(
+            new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList(
+                new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Collections.emptyList())
+            ))
+        ));
+        
+        try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:","user","pwd")){
+            assertThrows(ClassCastException.class,()->conn.createStatement());
+        }
     }
 }
