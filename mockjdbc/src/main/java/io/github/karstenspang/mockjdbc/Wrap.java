@@ -15,7 +15,7 @@ public class Wrap {
      * @param wrapped Object to wrap
      * @param program Program to wrap the object with
      */
-    protected Wrap(Object wrapped,Program program){
+    public Wrap(Object wrapped,Program program){
         this.wrapped=wrapped;
         this.steps=program.iterator();
     }

@@ -35,7 +35,14 @@ To use for unit testing in Maven, add the following to you POM:
   <scope>test</scope>
 </dependency>
 ```
-## Example
+## Examples
+
+Some examples of code that can be tested using mockjdbc. These can be found in
+the test sources.
+
+For details, see [the javadoc](https://javadoc.io/doc/io.github.karstenspang/mockjdbc).
+
+### Retry in case of overloaded database
 Let's say you have an Oracle database that sometimes have too many
 connections, and for that reason, connecting fails with
 ```
@@ -60,7 +67,7 @@ public class Connector {
                 return DriverManager.getConnection(url,user,password);
             }
             catch(SQLException ex){
-                if (fail>maxFails) throw ex;
+                if (fails>maxFails) throw ex;
                 int code=ex.getErrorCode();
                 if (code!=12520) throw ex;
             }
@@ -81,7 +88,7 @@ import io.github.karstenspang.mockjdbc.MockDriver;
 import io.github.karstenspang.mockjdbc.PassThruStep;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -105,9 +112,10 @@ public class ConnectorTest {
         SQLException ex=new SQLException("db overloaded","00000",12520);
         ExceptionStep step1=new ExceptionStep(ex);
         PassThruStep step2=PassThruStep.instance();
-        MockDriver.setProgram(List.of(step1,step2));
+        MockDriver.setProgram(Arrays.asList(step1,step2));
         // Run the test
-        try(Connection conn=Connector.getConnection("jdbc:mock:h2:mem:","user","pwd",2,0L)){}
+        Connection conn=Example.getConnection("jdbc:mock:h2:mem:","user","pwd",2,0L);
+        conn.close();
     }
 }
 ```
@@ -119,4 +127,90 @@ the driver loaded, so we do this explicitly.
 It is not neccessary to include the second step, since the program will
 return a `PassThruStep` if called after the list of steps is exhausted.
 
-For details, see [the javadoc](https://javadoc.io/doc/io.github.karstenspang/mockjdbc).
+### Reconnect if connection is broken
+
+If you have problems with the connection being broken, e.g. to
+firewall timeouts, you can remedy this by testing the connection
+at strategic points in the code and reconnect if needed. This method
+could do the job. The code has SLF4J logging, allowing verification of
+what was actually done.
+```
+public static Connection checkOrConnect(
+    Connection conn,
+    String url,
+    String user,
+    String password
+)
+    throws SQLException
+{
+    if (conn!=null){
+        logger.debug("Checking connection");
+        try(Statement stmt=conn.createStatement()){
+            stmt.execute("select 0");
+        }
+        catch(SQLException e){
+            logger.error("Connection broken, closing",e);
+            try{
+                conn.close();
+            }
+            catch(SQLException ee){
+                logger.debug("close failed",ee);
+            }
+            conn=null;
+        }
+    }
+    if (conn==null){
+        logger.info("Connecting to "+url);
+        conn=DriverManager.getConnection(url,user,password);
+    }
+    return conn;
+}
+```
+Here, you want either `createStatement` or `execute` to fail, so you
+can force the reconnection. This case is when you create the connection
+at the first attempt, but the check fails in the second attempt, and
+reconnection is successfull.
+```
+@Test
+@DisplayName("If the connection was broken, it is reconnected")
+public void testCheckConnection()
+    throws SQLException
+{
+    SQLException disconnect=new SQLException("Connection broken");
+    SQLException closeFail=new SQLException("close failed");
+    
+    List<Step> program=Arrays.asList(
+        new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList( // Initial connection
+            new ExceptionStep(disconnect), // createStatement
+            new ExceptionStep(closeFail) // Connection.close
+        )),
+        PassThruStep.instance() // Reconnect
+    );
+    
+    TestLogger exampleLogger=TestLoggerFactory.getTestLogger(Example.class);
+    exampleLogger.clear();
+    MockDriver.setProgram(program);
+    Connection conn=Example.checkOrConnect(null,"jdbc:mock:h2:mem:","user","pwd");
+    conn=Example.checkOrConnect(conn,"jdbc:mock:h2:mem:","user","pwd");
+    conn.close();
+    List<LoggingEvent> events=exampleLogger.getLoggingEvents();
+    List<LoggingEvent> expectedEvents=Arrays.asList(
+        LoggingEvent.info("Connecting to jdbc:mock:h2:mem:"),
+        LoggingEvent.debug("Checking connection"),
+        LoggingEvent.error(disconnect,"Connection broken, closing"),
+        LoggingEvent.debug(closeFail,"close failed"),
+        LoggingEvent.info("Connecting to jdbc:mock:h2:mem:")
+    );
+    assertEquals(expectedEvents,events);
+}
+```
+The first step of the program creates a wrap around the connection, giving it
+a program of its own. Every method call on the connection will have a step
+applied in the order give by the program.
+The program on the connection makes first `createStatement`
+and then `close` fail. Note that the autogenerated wraps have constructors
+taking a wrapped object and a program as arguments, thus matching the
+`Wrapper` interface.
+
+[SLF4J Test](http://projects.lidalia.org.uk/slf4j-test/) is used to check
+the log, and thus that the execution took the expected path.
