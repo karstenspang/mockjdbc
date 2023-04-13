@@ -37,13 +37,21 @@ public class WrapperStep<W> implements Step {
     }
     
     /**
-     * Always throws {@link ClassCastException}, as there is no way to wrap {@code void}.
+     * Always throws {@link IllegalArgumentException}, as there is no way to wrap {@code void}.
      * @param action not used
-     * @throws ClassCastException always
+     * @throws IllegalArgumentException always
      */
     @Override
     public void apply(SQLRunnable action)
     {
-        throw new ClassCastException("void cannot be wrapped");
+        throw new IllegalArgumentException("void cannot be wrapped");
+    }
+    
+    @Override
+    public String toString(){
+        return super.toString()+
+            "{wrapper:"+String.valueOf(wrapper)+
+            ",program:"+String.valueOf(program)+
+            "}";
     }
 }

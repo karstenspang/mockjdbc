@@ -43,9 +43,6 @@ public class WrapGenerator {
     public static void generateWraps(Iterable<String> ifNames,String packageName,String baseDir)
         throws IOException,ClassNotFoundException
     {
-        System.out.println(String.valueOf(ifNames));
-        System.out.println(String.valueOf(packageName));
-        System.out.println(String.valueOf(baseDir));
         Set<Class<?>> interfaces=new HashSet<>();
         for (String ifName:ifNames){
             interfaces.add(Class.forName("java.sql."+ifName));
@@ -79,11 +76,13 @@ public class WrapGenerator {
             writer.write("import "+ifClass.getCanonicalName()+";\n");
             writer.write("\n");
             writer.write("/**\n");
-            writer.write(" * Auto-generated wrap of {@link "+ifClass.getSimpleName()+"}\n");
+            writer.write(" * Auto-generated wrap of {@link "+ifClass.getSimpleName()+"} with a {@link Program}.\n");
+            writer.write(" * Every method call will have a step from the program applied, in order.\n");
             writer.write(" */\n");
             writer.write("public class "+ifClass.getSimpleName()+"Wrap extends "+(notSpecialInterfaces.isEmpty()?"":notSpecialInterfaces.toArray(new Class<?>[1])[0].getSimpleName())+"Wrap implements "+ifClass.getSimpleName()+" {\n");
             writer.write("    /**\n");
-            writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}\n");
+            writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
+            writer.write("     * Note that this constructor can be used as a target for {@link Wrapper}<code>&lt;"+ifClass.getSimpleName()+"&gt;</code>.\n");
             writer.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
             writer.write("     * @param program {@link Program} to wrap the object with\n");
             writer.write("     */\n");
