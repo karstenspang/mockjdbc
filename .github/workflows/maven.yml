@@ -27,10 +27,8 @@ jobs:
         java-version: '8'
         distribution: 'temurin'
         cache: maven
-    - name: Make version edible 
-      run: REVISION=`echo ${{ github.ref_name }}|sed -e 's@/@-@'`
     - name: Build with Maven
-      run: mvn -B verify --file pom.xml "-Drevision=${REVISION}-SNAPSHOT"
+      run: mvn -B verify --file pom.xml "-Drevision=`echo ${{ github.ref_name }}|sed -e 's@/@-@'`-SNAPSHOT"
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     #- name: Update dependency graph
