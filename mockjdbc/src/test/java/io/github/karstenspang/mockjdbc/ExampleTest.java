@@ -2,6 +2,7 @@ package io.github.karstenspang.mockjdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,7 +50,10 @@ public class ExampleTest {
         
         List<Step> program=Arrays.asList(
             new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList( // Initial connection
-                new ExceptionStep(disconnect), // createStatement
+                new WrapperStep<Statement>(StatementWrap::new,Arrays.asList( // createStatement
+                    new ExceptionStep(disconnect), // execute
+                    PassThruStep.instance() // Statement.close
+                )),
                 new ExceptionStep(closeFail) // Connection.close
             )),
             PassThruStep.instance() // Reconnect

@@ -10,6 +10,7 @@ import java.io.Writer;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Wrapper;
@@ -20,7 +21,7 @@ import java.util.Set;
 
 /**
  * Generate wraps around major interfaces in the {@link java.sql} package.<p>
- * To do: Handle type parameters of methods.
+ * To do: Handle bounds of type parameters of methods.
  */
 public class WrapGenerator {
     private static final Set<Class<?>> specialInterfaces;
@@ -82,7 +83,7 @@ public class WrapGenerator {
             writer.write("public class "+ifClass.getSimpleName()+"Wrap extends "+(notSpecialInterfaces.isEmpty()?"":notSpecialInterfaces.toArray(new Class<?>[1])[0].getSimpleName())+"Wrap implements "+ifClass.getSimpleName()+" {\n");
             writer.write("    /**\n");
             writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
-            writer.write("     * Note that this constructor can be used as a target for {@link Wrapper}<code>&lt;"+ifClass.getSimpleName()+"&gt;</code>.\n");
+            writer.write("     * Note that this constructor can be used as a target for {@link Wrapper}<code>&lt;</code>{@link "+ifClass.getSimpleName()+"}<code>&gt;</code>.\n");
             writer.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
             writer.write("     * @param program {@link Program} to wrap the object with\n");
             writer.write("     */\n");
@@ -113,8 +114,22 @@ public class WrapGenerator {
                 int modifiers=method.getModifiers();
                 if (Modifier.isStatic(modifiers)) continue;
                 if (!Modifier.isPublic(modifiers)) continue;
+                if (method.getAnnotation(Deprecated.class)!=null){
+                    writer.write("    @Deprecated\n");
+                }
                 writer.write("    @Override\n");
-                writer.write("    public "+method.getGenericReturnType().getTypeName()+" "+method.getName()+"(");
+                writer.write("    public ");
+                TypeVariable<Method>[] typeParameters=method.getTypeParameters();
+                if (typeParameters.length!=0){
+                    writer.write("<");
+                    int x=0;
+                    for (TypeVariable<Method> typeParameter:typeParameters){
+                        if (x!=0) writer.write(",");
+                        writer.write(typeParameter.getName());
+                    }
+                    writer.write("> ");
+                }
+                writer.write(method.getGenericReturnType().getTypeName()+" "+method.getName()+"(");
                 boolean first=true;
                 int pno=0;
                 for (Type param:method.getGenericParameterTypes()){
