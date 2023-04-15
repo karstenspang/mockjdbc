@@ -22,9 +22,9 @@ public class WrapperStep<W> implements Step {
     
     /**
      * Call the supplier, wrap the result, and return the wrap.
-     * @param <T> The type returned by {[@code supplier} and this method. Must match <code>&lt;W&gt;</code>.
-     * @param supplier Called to get the result
-     * @return wrapped result from {@code supplier}
+     * @param <T> The type returned by {@code supplier} and this method. Must match <code>&lt;W&gt;</code>.
+     * @param supplier Called to get the object to wrap.
+     * @return wrapped result from {@code supplier}.
      * @throws SQLException if {@code supplier} does.
      * @throws ClassCastException if <code>&lt;W&gt;</code> and <code>&lt;T&gt;</code> do not match.
      */
@@ -49,9 +49,6 @@ public class WrapperStep<W> implements Step {
     
     @Override
     public String toString(){
-        return super.toString()+
-            "{wrapper:"+String.valueOf(wrapper)+
-            ",program:"+String.valueOf(program)+
-            "}";
+        return "WrapperStep: "+String.valueOf(program);
     }
 }

@@ -46,7 +46,6 @@ public class ExceptionStep implements Step {
      * @return the string represetation
      */
     public String toString(){
-        return super.toString()+
-            "{exception:"+String.valueOf(exception)+"}";
+        return "ExceptionStep: "+String.valueOf(exception);
     }
 }

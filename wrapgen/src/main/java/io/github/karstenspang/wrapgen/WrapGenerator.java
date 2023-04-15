@@ -75,12 +75,15 @@ public class WrapGenerator {
             writer.write("package "+packageName+";\n");
             writer.write("\n");
             writer.write("import "+ifClass.getCanonicalName()+";\n");
+            writer.write("import java.util.Arrays;\n");
+            writer.write("import java.util.logging.Logger;\n");
             writer.write("\n");
             writer.write("/**\n");
             writer.write(" * Auto-generated wrap of {@link "+ifClass.getSimpleName()+"} with a {@link Program}.\n");
             writer.write(" * Every method call will have a step from the program applied, in order.\n");
             writer.write(" */\n");
             writer.write("public class "+ifClass.getSimpleName()+"Wrap extends "+(notSpecialInterfaces.isEmpty()?"":notSpecialInterfaces.toArray(new Class<?>[1])[0].getSimpleName())+"Wrap implements "+ifClass.getSimpleName()+" {\n");
+            writer.write("    private static Logger logger=Logger.getLogger(\""+packageName+"."+ifClass.getSimpleName()+"Wrap\");\n");
             writer.write("    /**\n");
             writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
             writer.write("     * Note that this constructor can be used as a target for {@link Wrapper}<code>&lt;</code>{@link "+ifClass.getSimpleName()+"}<code>&gt;</code>.\n");
@@ -88,7 +91,10 @@ public class WrapGenerator {
             writer.write("     * @param program {@link Program} to wrap the object with\n");
             writer.write("     */\n");
             writer.write("     public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Program program){\n");
-            writer.write("         super(wrapped,program);\n");
+            writer.write("         this("+ifClass.getSimpleName()+"Wrap.class,wrapped,program);\n");
+            writer.write("     }\n");
+            writer.write("     protected "+ifClass.getSimpleName()+"Wrap(Class<? extends "+ifClass.getSimpleName()+"Wrap> clazz,"+ifClass.getSimpleName()+" wrapped,Program program){\n");
+            writer.write("         super(clazz,wrapped,program);\n");
             writer.write("     }\n");
             writer.write("\n");
             writer.write("     @SuppressWarnings(\"unchecked\")\n");
@@ -101,12 +107,16 @@ public class WrapGenerator {
                 writer.write("    public boolean isWrapperFor​(Class<?> iface)\n");
                 writer.write("        throws java.sql.SQLException\n");
                 writer.write("    {\n");
-                writer.write("        return steps.next().apply(()->getWrapped"+ifClass.getSimpleName()+"().isWrapperFor​(iface));\n");
+                writer.write("        Step step=steps.next();\n");
+                writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".isWrapperFor​(\"+String.valueOf(iface)+\")\");\n");
+                writer.write("        return step.apply(()->getWrapped"+ifClass.getSimpleName()+"().isWrapperFor​(iface));\n");
                 writer.write("    }\n");
                 writer.write("    @Override\n");
                 writer.write("    public <T> T unwrap​(Class<T> iface)\n");
                 writer.write("        throws java.sql.SQLException\n");
                 writer.write("    {\n");
+                writer.write("        Step step=steps.next();\n");
+                writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".unWrap(\"+String.valueOf(iface)+\")\");\n");
                 writer.write("        return steps.next().apply(()->getWrapped"+ifClass.getSimpleName()+"().unwrap(iface));\n");
                 writer.write("    }\n");
             }
@@ -130,7 +140,6 @@ public class WrapGenerator {
                     writer.write("> ");
                 }
                 writer.write(method.getGenericReturnType().getTypeName()+" "+method.getName()+"(");
-                boolean first=true;
                 int pno=0;
                 for (Type param:method.getGenericParameterTypes()){
                     if (pno!=0){
@@ -153,13 +162,29 @@ public class WrapGenerator {
                 }
                 writer.write("    {\n");
                 if (!exceptions.isEmpty() && !exceptions.contains(SQLException.class)){
-                    writer.write("        try{\n    ");
+                    writer.write("        try{\n");
                 }
+                writer.write("        Step step=steps.next();\n");
+                writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+"."+method.getName()+"(\"");
+                pno=0;
+                for (Class<?> param:method.getParameterTypes()){
+                    if (pno!=0){
+                        writer.write("+\",\"");
+                    }
+                    if (param.isArray()){
+                        writer.write("+Arrays.toString(p"+String.valueOf(pno)+")");
+                    }
+                    else{
+                        writer.write("+String.valueOf(p"+String.valueOf(pno)+")");
+                    }
+                    pno++;
+                }
+                writer.write("+\")\");\n");
                 writer.write("        ");
                 if (!"void".equals(method.getGenericReturnType().getTypeName())){
                     writer.write("return ");
                 }
-                writer.write("steps.next().apply(()->getWrapped"+ifClass.getSimpleName()+"()."+method.getName()+"(");
+                writer.write("step.apply(()->getWrapped"+ifClass.getSimpleName()+"()."+method.getName()+"(");
                 for (int a=0;a<method.getParameterCount();a++){
                     if (a!=0){
                         writer.write(",");

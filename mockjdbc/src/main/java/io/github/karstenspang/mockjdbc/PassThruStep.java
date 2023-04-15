@@ -43,5 +43,10 @@ public class PassThruStep implements Step {
         action.run();
     }
     
+    @Override
+    public String toString(){
+        return "PassThruStep";
+    }
+    
     private PassThruStep(){}
 }

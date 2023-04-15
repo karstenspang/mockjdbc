@@ -81,12 +81,12 @@ public class MockDriver implements Driver {
     public Connection connect​(final String url,final Properties info)
         throws SQLException
     {
-        logger.fine("connect("+String.valueOf(url)+","+String.valueOf(info)+")");
+        logger.finest("connect("+String.valueOf(url)+","+String.valueOf(info)+")");
         if (!isOurUrl(url)) return null;
         final String newUrl="jdbc:"+url.split(":",3)[2];
         if (isOurUrl(newUrl)) throw new IllegalArgumentException("Self referencing URL: "+url);
         Step step=steps.next();
-        logger.fine("Applying "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+"),"+String.valueOf(info)+")");
+        logger.finest("Apply "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+"),"+String.valueOf(info)+")");
         return step.apply(()->DriverManager.getConnection(newUrl,info));
     }
     @Override
@@ -120,7 +120,7 @@ public class MockDriver implements Driver {
             pomProperties=new Properties();
         }
         
-        logger.info("MockDriver version "+String.valueOf(pomProperties.getProperty("version")));
+        logger.config("MockDriver version "+String.valueOf(pomProperties.getProperty("version")));
         int[] versionParts=extractVersion(pomProperties.getProperty("version"));
         majorVersion=versionParts.length>=1?versionParts[0]:0;
         minorVersion=versionParts.length>=2?versionParts[1]:0;
