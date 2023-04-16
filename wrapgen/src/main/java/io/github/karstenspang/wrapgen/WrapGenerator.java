@@ -50,16 +50,17 @@ public class WrapGenerator {
         }
         Set<Class<?>> knownInterfaces=new HashSet<>(interfaces);
         knownInterfaces.addAll(specialInterfaces);
-        File dir=new File(new File(baseDir),packageName.replace('.',File.separatorChar));
+        File dir=new File(new File(new File(baseDir),packageName.replace('.',File.separatorChar)),"wrap");
         dir.mkdirs();
         for (Class<?> clazz:interfaces){
             generateWrap(clazz,packageName,dir,knownInterfaces);
         }
     }
     
-    private static void generateWrap(Class<?> ifClass,String packageName,File dir,Set<Class<?>> knownInterfaces)
+    private static void generateWrap(Class<?> ifClass,String basePackageName,File dir,Set<Class<?>> knownInterfaces)
         throws IOException
     {
+        String packageName=basePackageName+".wrap";
         if (!ifClass.isInterface()) throw new IllegalArgumentException("Class "+ifClass.getName()+" is not an interface");
         if (ifClass.isAnnotation()) throw new IllegalArgumentException("Class "+ifClass.getName()+" is an annotation");
         Set<Class<?>> extendedInterfaces=new HashSet<>(Arrays.asList(ifClass.getInterfaces()));
@@ -74,6 +75,10 @@ public class WrapGenerator {
         {
             writer.write("package "+packageName+";\n");
             writer.write("\n");
+            writer.write("import "+basePackageName+".Program;\n");
+            writer.write("import "+basePackageName+".Step;\n");
+            writer.write("import "+basePackageName+".Wrap;\n");
+            writer.write("import "+basePackageName+".Wrapper;\n");
             writer.write("import "+ifClass.getCanonicalName()+";\n");
             writer.write("import java.util.Arrays;\n");
             writer.write("import java.util.logging.Logger;\n");

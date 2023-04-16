@@ -1,8 +1,11 @@
 package io.github.karstenspang.mockjdbc;
 
+import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
 import io.github.karstenspang.mockjdbc.ExceptionStep;
 import io.github.karstenspang.mockjdbc.MockDriver;
 import io.github.karstenspang.mockjdbc.PassThruStep;
+import io.github.karstenspang.mockjdbc.wrap.PreparedStatementWrap;
+import io.github.karstenspang.mockjdbc.wrap.StatementWrap;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;

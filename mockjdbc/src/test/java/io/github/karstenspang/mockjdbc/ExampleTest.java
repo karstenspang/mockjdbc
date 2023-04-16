@@ -1,5 +1,7 @@
 package io.github.karstenspang.mockjdbc;
 
+import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
+import io.github.karstenspang.mockjdbc.wrap.StatementWrap;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;

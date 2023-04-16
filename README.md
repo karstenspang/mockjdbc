@@ -16,7 +16,7 @@ a program, that can cause e.g. `Connection.createStatement()`
 to fail on the second attempt. The returned statements again
 can be wrappers around `Statement` controlled by a program, etc.
 Currently wrappers exist for `Connection`, `Statement`,
-`PreparedStatement`, and `CallableStatement`.
+`PreparedStatement`, `CallableStatement`, and `ResultSet`.
 
 ## Java and JDBC versions
 For maximum usefullness,
@@ -87,6 +87,8 @@ succeeds, could be:
 import io.github.karstenspang.mockjdbc.ExceptionStep;
 import io.github.karstenspang.mockjdbc.MockDriver;
 import io.github.karstenspang.mockjdbc.PassThruStep;
+import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
+import io.github.karstenspang.mockjdbc.wrap.StatementWrap;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
