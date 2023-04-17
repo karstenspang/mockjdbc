@@ -91,7 +91,6 @@ public class Program implements Iterable<Step> {
      */
     @Override
     public String toString(){
-        return super.toString()+
-        "{rawProgram:"+String.valueOf(rawProgram)+"}";
+        return String.valueOf(rawProgram);
     }
 }

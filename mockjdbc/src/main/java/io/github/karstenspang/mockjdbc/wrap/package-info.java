@@ -1,8 +1,10 @@
 /**
  * Auto-generated classes that wrap the interfaces in {@link java.sql}.
- * All methods defined in the interface is implemented to call the
- * method wrapped object, after application of a {@link Step}, for
- * example {@link ConnectionWrap#createStatement()}:
+ * They all extend {@link io.github.karstenspang.mockjdbc.Wrap}.
+ * All methods defined in the interface are implemented to call the
+ * corresponding method of the wrapped object, after application of a
+ * {@link io.github.karstenspang.mockjdbc.Step}, for example
+ * {@link io.github.karstenspang.mockjdbc.wrap.ConnectionWrap#createStatement()}:
  *<pre>
  *&#64;Override
  *public Statement createStatement()
@@ -11,15 +13,32 @@
  *    return steps.next().apply(()-&gt;wrapped.createStatement());
  *}
  *</pre>
- * In other words, <b>every</b> method call to a wraps causes the program
- * to be advanced to the next step.
- * They have a constructor that take an object to be wrapped and a
- * {@link Program}, thus matching the signature of {@link Wrapper},
- * like {@link ConnectionWrap#ConnectionWrap(Connection,Program)}.
+ * In other words, <b>every</b> method call to a wrap causes the program
+ * to be advanced to the next step and applying it. However, this does not
+ * apply to methods defined in {@link java.lang.Object}, such as {@link java.lang.Object#toString()}.<p>
+ * The wraps have constructors that take an object to be wrapped and a
+ * {@link io.github.karstenspang.mockjdbc.Program}, thus matching the signature of
+ * {@link io.github.karstenspang.mockjdbc.Wrapper}, for example
+ * {@link io.github.karstenspang.mockjdbc.wrap.ConnectionWrap#ConnectionWrap(java.sql.Connection,io.github.karstenspang.mockjdbc.Program)}
+ * matches {@link io.github.karstenspang.mockjdbc.Wrapper}&lt;{@link java.sql.Connection}&gt;.
+ * <h3>Exceptions</h3>
+ * The vast majority of the methods of the interfaces in {@link java.sql}
+ * are declared to throw {@link java.sql.SQLException}, and consequently, the
+ * methods in {@link io.github.karstenspang.mockjdbc.Step} are declared likewise. In case a method is not
+ * declared to throw {@link java.sql.SQLException}, it is caught and an
+ * {@link java.lang.IllegalStateException} is thrown with the original exception
+ * as cause.
+ * For example, {@link java.sql.Connection#setClientInfo(java.util.Properties)}
+ * is declared to throw an {@link java.sql.SQLClientInfoException}. If the
+ * {@link io.github.karstenspang.mockjdbc.ExceptionStep} throws an
+ * {@link java.sql.SQLClientInfoException}, then that exception is delivered
+ * as expected, but if any other {@link java.sql.SQLException} is thrown
+ * then an {@link java.lang.IllegalStateException} is delivered.
+ * <h3>Methods Defined in {@link java.lang.Object}</h3>
+ * The methods defined in {@link java.lang.Object} are not implemented in the
+ * generated wraps, even if defined in the interface. The methods
+ * {@link java.lang.Object#toString()}, {@link java.lang.Object#hashCode()},
+ * and {@link java.lang.Object#equals(java.lang.Object)} are overridden in
+ * the base class {@link io.github.karstenspang.mockjdbc.Wrap}.
  */
 package io.github.karstenspang.mockjdbc.wrap;
-
-import io.github.karstenspang.mockjdbc.Program;
-import io.github.karstenspang.mockjdbc.Step;
-import io.github.karstenspang.mockjdbc.Wrapper;
-import java.sql.Connection;

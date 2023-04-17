@@ -17,37 +17,46 @@ import java.sql.Wrapper;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Generate wraps around major interfaces in the {@link java.sql} package.<p>
- * To do: Handle bounds of type parameters of methods.
  */
 public class WrapGenerator {
     private static final Set<Class<?>> specialInterfaces;
     static{
         specialInterfaces=Collections.unmodifiableSet(new HashSet<>(Arrays.asList(Wrapper.class,AutoCloseable.class)));
     }
+    private static final Set<Class<?>> interfaces;
+    static{
+        // Interfaces in java.sql as per JDBC 4.2, except Driver, DriverNotification, and Wrapper.
+        interfaces=Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            java.sql.Array.class,java.sql.Blob.class,java.sql.CallableStatement.class,
+            java.sql.Clob.class,java.sql.Connection.class,java.sql.DatabaseMetaData.class,
+            java.sql.NClob.class,java.sql.ParameterMetaData.class,
+            java.sql.PreparedStatement.class,java.sql.Ref.class,java.sql.ResultSet.class,
+            java.sql.ResultSetMetaData.class,java.sql.RowId.class,java.sql.Savepoint.class,
+            java.sql.SQLData.class,java.sql.SQLInput.class,java.sql.SQLOutput.class,
+            java.sql.SQLType.class,java.sql.SQLXML.class,java.sql.Statement.class,
+            java.sql.Struct.class)));
+    }
+    private static Set<MethodDesc> objectMethods=getObjectMethods();
+    private static final String packageName="io.github.karstenspang.mockjdbc";
     
     /**
-     * Generate wraps for a number of interfaces.
-     * @param ifNames Simple names of interfaces
+     * Generate wraps for the interfaces in java.sql, as per JDBC 4.2 (Java 8).
      * @param packageName Name of the package of the generated classes. This also determines the subdirectory to place the output.
      * @param baseDir Where to place the output, such as {@code target/generated-classes/java}.
      * @throws IOException if the output cannot be written.
      * @throws ClassNotFoundException if a specified interface does not exist.
-     * @throws IllegalArgumentException if one of the specified names is not an interface,
-     *         is an annotation,
-     *         extends an interface not specified and not {@link Wrapper} or {@link AutoCloseable},
-     *         or extends more than one of the specified names.
+     * @throws IllegalArgumentException if one of the found names
+     *         extends an interface not found and not {@link Wrapper} or {@link AutoCloseable},
+     *         or extends more than one of the found names.
      */
-    public static void generateWraps(Iterable<String> ifNames,String packageName,String baseDir)
+    public static void generateWraps(String baseDir)
         throws IOException,ClassNotFoundException
     {
-        Set<Class<?>> interfaces=new HashSet<>();
-        for (String ifName:ifNames){
-            interfaces.add(Class.forName("java.sql."+ifName));
-        }
         Set<Class<?>> knownInterfaces=new HashSet<>(interfaces);
         knownInterfaces.addAll(specialInterfaces);
         File dir=new File(new File(new File(baseDir),packageName.replace('.',File.separatorChar)),"wrap");
@@ -129,6 +138,7 @@ public class WrapGenerator {
                 int modifiers=method.getModifiers();
                 if (Modifier.isStatic(modifiers)) continue;
                 if (!Modifier.isPublic(modifiers)) continue;
+                if (objectMethods.contains(new MethodDesc(method))) continue;
                 if (method.getAnnotation(Deprecated.class)!=null){
                     writer.write("    @Deprecated\n");
                 }
@@ -141,6 +151,15 @@ public class WrapGenerator {
                     for (TypeVariable<Method> typeParameter:typeParameters){
                         if (x!=0) writer.write(",");
                         writer.write(typeParameter.getName());
+                        Type[] bounds=typeParameter.getBounds();
+                        if (bounds.length!=0){
+                            writer.write(" extends ");
+                            int y=0;
+                            for (Type bound:bounds){
+                                if (y!=0) writer.write("&");
+                                writer.write(bound.getTypeName());
+                            }
+                        }
                     }
                     writer.write("> ");
                 }
@@ -166,7 +185,7 @@ public class WrapGenerator {
                     writer.write("\n");
                 }
                 writer.write("    {\n");
-                if (!exceptions.isEmpty() && !exceptions.contains(SQLException.class)){
+                if (!exceptions.contains(SQLException.class)){
                     writer.write("        try{\n");
                 }
                 writer.write("        Step step=steps.next();\n");
@@ -197,18 +216,20 @@ public class WrapGenerator {
                     writer.write("p"+String.valueOf(a));
                 }
                 writer.write("));\n");
-                if (!exceptions.isEmpty() && !exceptions.contains(SQLException.class)){
+                if (!exceptions.contains(SQLException.class)){
                     writer.write("        }\n");
-                    writer.write("        catch(");
-                    int i=0;
-                    for (Class<?> exception:exceptions){
-                        if (i!=0) writer.write("|");
-                        writer.write(exception.getCanonicalName());
-                        i++;
+                    if (!exceptions.isEmpty()){
+                        writer.write("        catch(");
+                        int i=0;
+                        for (Class<?> exception:exceptions){
+                            if (i!=0) writer.write("|");
+                            writer.write(exception.getCanonicalName());
+                            i++;
+                        }
+                        writer.write(" e){\n");
+                        writer.write("            throw e;\n");
+                        writer.write("        }\n");
                     }
-                    writer.write(" e){\n");
-                    writer.write("            throw e;\n");
-                    writer.write("        }\n");
                     writer.write("        catch(java.sql.SQLException e){\n");
                     writer.write("            throw new IllegalStateException(\"unexpected exception\",e);\n");
                     writer.write("        }\n");
@@ -219,9 +240,12 @@ public class WrapGenerator {
         }
     }
     
-    public static void main(String[] args)
-        throws IOException,ClassNotFoundException
-    {
-        generateWraps(Arrays.asList("Connection","Statement","CallableStatement","PreparedStatement"),"io.github.karstenspang.mockjdbc","generated-sources/java");
+    private static Set<MethodDesc> getObjectMethods(){
+        Set<MethodDesc> methods=new HashSet<>();
+        for (Method method:Object.class.getDeclaredMethods()){
+            if (!Modifier.isPublic(method.getModifiers())) continue;
+            methods.add(new MethodDesc(method));
+        }
+        return Collections.unmodifiableSet(methods);
     }
 }

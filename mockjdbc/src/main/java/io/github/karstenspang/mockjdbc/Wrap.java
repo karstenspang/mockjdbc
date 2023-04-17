@@ -15,10 +15,13 @@ public class Wrap {
     protected final Object wrapped;
     /** Steps to apply */
     protected final Iterator<Step> steps;
+    private Program program;
     /**
      * Wrap an object
      * @param wrapped Object to wrap
-     * @param program Program to wrap the object with
+     * @param program Program to wrap the object with. {@link Program#iterator()}
+     * is called once in the constructor.
+     * @throws NullPointerException if {@code wrapped} or {@code program} is {@code null}.
      */
     public Wrap(Object wrapped,Program program){
         this(Wrap.class,wrapped,program);
@@ -28,12 +31,48 @@ public class Wrap {
      * Wrap an object
      * @param clazz Class of the wrap, for logging purposes.
      * @param wrapped Object to wrap
-     * @param program Program to wrap the object with
+     * @param program Program to wrap the object with. {@link Program#iterator()}
+     * is called once in the constructor.
+     * @throws NullPointerException if {@code wrapped} or {@code program} is {@code null}.
      */
     protected Wrap(Class<? extends Wrap> clazz,Object wrapped,Program program){
+        if (wrapped==null) throw new NullPointerException("null can not be wrapped");
+        if (program==null) throw new NullPointerException("program can not be null");
         Logger logger=Logger.getLogger(clazz.getName());
         logger.fine("Wrapping "+String.valueOf(wrapped)+" in "+clazz.getName()+ "with program "+String.valueOf(program));
         this.wrapped=wrapped;
+        this.program=program;
         this.steps=program.iterator();
+    }
+    
+    /**
+     * Check if the wrapped value is equal to another object.
+     * @param other object to check. If an instance of {@link Wrap},
+     *        then its wrapped value is checked.
+     * @return {@code true} if matched, {@code false} otherwise.
+     */
+    @Override
+    public boolean equals(Object other){
+        if (other instanceof Wrap) other=((Wrap)other).wrapped;
+        return wrapped.equals(other);
+    }
+    
+    /**
+     * Hash code
+     * @return The hash code of the wrapped object.
+     */
+    @Override
+    public int hashCode(){return wrapped.hashCode();}
+    
+    /**
+     * Get the string representation
+     * @return The representation of the actual wrap class,
+     *         of the wrapped object, and of the program.
+     */
+    @Override
+    public String toString(){
+        return getClass().getName()+
+            ":{wrapped:"+wrapped.toString()+
+            ",program:"+program.toString()+"}";
     }
 }

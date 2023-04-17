@@ -12,8 +12,8 @@ public class WrapperStep<W> implements Step {
     
     /**
      * Construct the step.
-     * @param wrapper Creates the wrap
-     * @param program The steps to pass to {@code wrapper}
+     * @param wrapper Creates the wrap.
+     * @param program The steps to pass to {@code wrapper}.
      */
     public WrapperStep(Wrapper<W> wrapper,Iterable<Step> program){
         this.wrapper=wrapper;

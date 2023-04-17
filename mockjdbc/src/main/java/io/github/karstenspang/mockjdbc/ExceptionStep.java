@@ -4,9 +4,11 @@ import java.sql.SQLException;
 
 /**
  * {@link Step} used when the program needs to throw an exception.
+ * {@link SQLException} and {@link RuntimeException} are supported.
  */
 public class ExceptionStep implements Step {
-    SQLException exception;
+    private SQLException exception;
+    private RuntimeException runtimeException;
     
     /**
      * Construct the step
@@ -15,6 +17,17 @@ public class ExceptionStep implements Step {
     public ExceptionStep(SQLException exception)
     {
         this.exception=exception;
+        this.runtimeException=null;
+    }
+    
+    /**
+     * Construct the step
+     * @param exception Exception to be thrown by the step
+     */
+    public ExceptionStep(RuntimeException exception)
+    {
+        this.exception=null;
+        this.runtimeException=exception;
     }
     
     /**
@@ -27,7 +40,8 @@ public class ExceptionStep implements Step {
     public <T> T apply(SQLSupplier<? extends T> supplier)
         throws SQLException
     {
-        throw exception;
+        if (exception!=null) throw exception;
+        throw runtimeException;
     }
     
     /**
@@ -38,7 +52,8 @@ public class ExceptionStep implements Step {
     public void apply(SQLRunnable action)
         throws SQLException
     {
-        throw exception;
+        if (exception!=null) throw exception;
+        throw runtimeException;
     }
     
     /**
@@ -46,6 +61,6 @@ public class ExceptionStep implements Step {
      * @return the string represetation
      */
     public String toString(){
-        return "ExceptionStep: "+String.valueOf(exception);
+        return "ExceptionStep: "+(exception!=null?String.valueOf(exception):String.valueOf(runtimeException));
     }
 }
