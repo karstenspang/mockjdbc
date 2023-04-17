@@ -15,8 +15,9 @@ The returned connections themselves can be wrappers controlled by
 a program, that can cause e.g. `Connection.createStatement()`
 to fail on the second attempt. The returned statements again
 can be wrappers around `Statement` controlled by a program, etc.
-Currently wrappers exist for `Connection`, `Statement`,
-`PreparedStatement`, `CallableStatement`, and `ResultSet`.
+Wrappers exist for all interfaces in `java.sql` for which this is
+meaningful, i.e. except `Driver`, `DriverNotification`, and
+`Wrapper`.
 
 ## Java and JDBC versions
 For maximum usefullness,
@@ -24,7 +25,8 @@ I have decided to build this with Java 8, and thus the wrappers
 will implement only what is in JDBC 4.2. If used with java 9 and
 higher, new methods introduced in 4.3 will have their default
 implementation in the wrappers, even if the wrapped driver has
-overridden the default implementation.
+overridden the default implementation. Likewise, no wrappers exist
+for new interfaces.
 
 ## Dependency information
 To use for unit testing in Maven, add the following to you POM:

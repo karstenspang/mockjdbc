@@ -32,7 +32,6 @@ public class WrapperStepTest {
     @DisplayName("Wrapping a void method throws IllegalArgumentException")
     public void testWrapVoid()
     {
-        Wrap x=new Wrap(new Object(){},new Program(Collections.emptyList()));
         WrapperStep<Object> step=new WrapperStep<>(Wrap::new,Collections.emptyList());
         assertThrows(IllegalArgumentException.class,()->step.apply(()->{}));
     }

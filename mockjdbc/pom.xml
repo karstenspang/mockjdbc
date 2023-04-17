@@ -103,9 +103,7 @@
             <configuration>
               <source>
                 String baseDir=project.properties['wrap.source.dir'];
-                List&lt;String&gt; ifaces=['Connection','Statement','CallableStatement','PreparedStatement','ResultSet'];
-                String pkgNm='io.github.karstenspang.mockjdbc';
-                io.github.karstenspang.wrapgen.WrapGenerator.generateWraps(ifaces,pkgNm,baseDir);
+                io.github.karstenspang.wrapgen.WrapGenerator.generateWraps(baseDir);
               </source>
             </configuration>
           </execution>
@@ -184,7 +182,7 @@
         </reportSets>
         <configuration>
           <excludes>
-            <exclude>**/*?Wrap.*</exclude>
+            <exclude>**/wrap/*</exclude>
           </excludes>
         </configuration>
       </plugin>

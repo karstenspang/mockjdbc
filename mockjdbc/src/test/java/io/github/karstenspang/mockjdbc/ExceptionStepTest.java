@@ -15,6 +15,7 @@ public class ExceptionStepTest {
     {
         SQLException ex=new SQLException();
         ExceptionStep st=new ExceptionStep(ex);
+        st.toString();
         final Integer i1=Integer.valueOf(1);
         SQLException e=assertThrows(SQLException.class,()->st.apply(()->i1));
         assertSame(ex,e);
@@ -27,7 +28,33 @@ public class ExceptionStepTest {
     {
         SQLException ex=new SQLException();
         ExceptionStep st=new ExceptionStep(ex);
+        st.toString();
         SQLException e=assertThrows(SQLException.class,()->st.apply(()->{}));
+        assertSame(ex,e);
+    }
+    
+    @Test
+    @DisplayName("RuntimeException is thrown on supplier")
+    public void testSupplierRuntime()
+        throws SQLException
+    {
+        RuntimeException ex=new RuntimeException();
+        ExceptionStep st=new ExceptionStep(ex);
+        st.toString();
+        final Integer i1=Integer.valueOf(1);
+        RuntimeException e=assertThrows(RuntimeException.class,()->st.apply(()->i1));
+        assertSame(ex,e);
+    }
+    
+    @Test
+    @DisplayName("RuntimeException is thrown on runnable")
+    public void testRunnableRuntime()
+        throws SQLException
+    {
+        RuntimeException ex=new RuntimeException();
+        ExceptionStep st=new ExceptionStep(ex);
+        st.toString();
+        RuntimeException e=assertThrows(RuntimeException.class,()->st.apply(()->{}));
         assertSame(ex,e);
     }
 }
