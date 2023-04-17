@@ -153,4 +153,23 @@ public class MockDriverTest {
         MockDriver.setProgram(null);
         assertThrows(IllegalArgumentException.class,()->DriverManager.getConnection("jdbc:mock:mock:",new Properties()));
     }
+    
+    @Test
+    @DisplayName("The driver program set in the parent thread before thread creation will be used by a child thread")
+    public void testProgramInteritance()
+        throws Exception
+    {
+        final SQLException ex=new SQLException("test");
+        MockDriver.setProgram(Arrays.asList(new ExceptionStep(ex)));
+        TestThread t=new TestThread(()->{
+            SQLException thrown=assertThrows(SQLException.class,()->{
+                Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties());
+                conn.close();
+            });
+            assertSame(ex,thrown);
+        });
+        MockDriver.setProgram(null);
+        t.start();
+        t.joinAndCheck();
+    }
 }

@@ -29,7 +29,6 @@
   <developers>
     <developer>
       <name>Karsten Spang</name>
-      <email>karstenspang@gmail.com</email>
       <id>karstenspang</id>
       <organization>GitHub</organization>
       <organizationUrl>https://github.com/karstenspang</organizationUrl>
@@ -64,6 +63,11 @@
         <groupId>com.h2database</groupId>
         <artifactId>h2</artifactId>
         <version>2.1.214</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opentest4j</groupId>
+        <artifactId>opentest4j</artifactId>
+        <version>1.2.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
