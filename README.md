@@ -2,6 +2,7 @@
 [![latest release](https://img.shields.io/github/v/release/karstenspang/mockjdbc?sort=semver)](https://github.com/karstenspang/mockjdbc/releases)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.karstenspang/mockjdbc/badge.svg)](https://mvnrepository.com/artifact/io.github.karstenspang/mockjdbc)
 [![javadoc](https://javadoc.io/badge2/io.github.karstenspang/mockjdbc/javadoc.svg)](https://javadoc.io/doc/io.github.karstenspang/mockjdbc)
+[![Coverage](.github/badges/jacoco.svg)](https://karstenspang.github.io/mockjdbc/jacoco/index.html)
 
 # mockjdbc
 A mock JDBC driver delegating to a real JDBC driver, with the
@@ -34,10 +35,14 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>0.1.2</version>
+  <version>1.2.0</version>
   <scope>test</scope>
 </dependency>
 ```
+
+## Maven Site
+The Maven site can be found on [GitHub Pages](https://karstenspang.github.io/mockjdbc/index.html).
+
 ## Examples
 
 Some examples of code that can be tested using mockjdbc. These can be found in

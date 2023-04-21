@@ -1,2 +1,3 @@
 target/
 .flattened-pom.xml
+/mockjdbc/src/site/markdown/apidocs/index.md

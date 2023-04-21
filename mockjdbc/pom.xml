@@ -53,6 +53,19 @@
         <filtering>false</filtering>
       </testResource>
     </testResources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <exclude>**/wrap/*</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -146,6 +159,43 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>com.github.github</groupId>
+        <artifactId>site-maven-plugin</artifactId>
+        <configuration>
+          <merge>false</merge>
+          <message>Update pages for ${project.version}</message>
+          <server>github</server>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>site</goal>
+            </goals>
+            <phase>site-deploy</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>clean apidocs/index.md</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>rm</executable>
+              <arguments>
+                <argument>-f</argument>
+                <argument>src/site/markdown/apidocs/index.md</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <reporting>
@@ -185,11 +235,6 @@
             </reports>
           </reportSet>
         </reportSets>
-        <configuration>
-          <excludes>
-            <exclude>**/wrap/*</exclude>
-          </excludes>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -208,6 +253,7 @@
   </reporting>
   <profiles>
     <profile>
+      <!-- Adds source and javadoc artifacts, signs the articfacts, and deploys to Central -->
       <id>release</id>
       <build>
         <plugins>
@@ -245,22 +291,68 @@
       </build>
     </profile>
     <profile>
-      <id>site</id>
-      <reporting>
+      <!-- Replaces javadoc with a reference to javadoc.io -->
+      <id>pages</id>
+      <build>
         <plugins>
-          <!-- Don't put javadoc on the site, since it is on javadoc.io -->
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <reportSets>
-              <reportSet>
-                <reports>
-                </reports>
-              </reportSet>
-            </reportSets>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy apidocs/index.md</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>cp</executable>
+                  <arguments>
+                    <argument>-fr</argument>
+                    <argument>src/misc/site-template/markdown/apidocs</argument>
+                    <argument>src/site/markdown/apidocs</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>remove apidocs/index.md</id>
+                <phase>post-site</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>rm</executable>
+                  <arguments>
+                    <argument>-f</argument>
+                    <argument>src/site/markdown/apidocs/index.md</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
-      </reporting>
+      </build>
+    </profile>    
+    <profile>
+      <id>jacocobadge</id>
+      <!-- Runs the JaCoCo report on the verify phase for the badge -->
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-code-coverage-report</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
