@@ -24,3 +24,19 @@ jobs:
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+  pages:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Java with keys for site deployment
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          server-id: github
+          server-password: PAGES_TOKEN
+          cache: maven
+      - name: Publish package
+        run: mvn --batch-mode clean install site-deploy -Drevision=${{ github.ref_name }} -P pages
+        env:
+          PAGES_TOKEN: ${{ secrets.PAGES_TOKEN }}
