@@ -1,7 +1,7 @@
 name: Publish to Central
 on:
   release:
-    types: [created, updated]
+    types: [created, edited]
 jobs:
   publish:
     runs-on: ubuntu-22.04
