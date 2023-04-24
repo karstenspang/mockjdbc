@@ -18,21 +18,9 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }} # Substituted with the value stored in the referenced secret
           gpg-passphrase: SIGN_KEY_PASS # Env var that holds the key's passphrase
           cache: maven
-      - name: Publish package
-        run: mvn --batch-mode clean deploy -Drevision=${{ github.ref_name }} -P release
+      - name: Publish package and site
+        run: mvn --batch-mode clean install site-deploy -Drevision=${{ github.ref_name }} -P release,pages -Dgithub.site.oauth2Token=${{ secrets.GITHUB_TOKEN }}
         env:
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-      - name: Set up Java with keys for site deployment
-        uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          distribution: 'temurin'
-          server-id: github
-          server-password: PAGES_TOKEN
-          cache: maven
-      - name: Publish package
-        run: mvn --batch-mode clean install site-deploy -Drevision=${{ github.ref_name }} -P pages
-        env:
-          PAGES_TOKEN: ${{ secrets.PAGES_TOKEN }}
