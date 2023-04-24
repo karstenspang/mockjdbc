@@ -19,7 +19,7 @@ jobs:
           gpg-passphrase: SIGN_KEY_PASS # Env var that holds the key's passphrase
           cache: maven
       - name: Publish package and site
-        run: mvn --batch-mode clean install site-deploy -Drevision=${{ github.ref_name }} -P release,pages -Dgithub.site.oauth2Token=${{ secrets.PAGES_TOKEN }}
+        run: mvn --batch-mode clean install site-deploy -Drevision=${{ github.ref_name }} -P release,pages -Dgithub.site.oauth2Token=${{ secrets.NEW_PAGES_TOKEN }}
         env:
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
