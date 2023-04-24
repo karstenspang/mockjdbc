@@ -1,7 +1,7 @@
 name: Publish to Central
 on:
   release:
-    types: [created]
+    types: [created, updated]
 jobs:
   publish:
     runs-on: ubuntu-22.04
@@ -24,10 +24,6 @@ jobs:
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-  pages:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
       - name: Set up Java with keys for site deployment
         uses: actions/setup-java@v3
         with:
