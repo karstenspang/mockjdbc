@@ -1,4 +1,4 @@
-name: Publish to Central
+name: Create pages
 on:
   release:
     types: [created]
