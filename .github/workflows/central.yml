@@ -41,5 +41,8 @@ jobs:
           mv ../mockjdbc/target/site/* .
           git add -A
           git commit -m "Update site for ${{ env.VER }}"
+          echo set url
           git remote set-url --push origin "https://karstenspang:{{ secrets.PAGES_TOKEN }}@github.com/karstenspang/mockjdbc"
+          git remote -v show origin
+          echo push
           git push
