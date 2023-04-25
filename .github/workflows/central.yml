@@ -22,7 +22,7 @@ jobs:
           gpg-passphrase: SIGN_KEY_PASS # Env var that holds the key's passphrase
           cache: maven
       - name: Publish package
-        run: mvn --batch-mode clean install site -Drevision=${{ env.VER }} -P release,pages
+        run: mvn --batch-mode clean deploy site -Drevision=${{ env.VER }} -P release,pages
         env:
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
@@ -36,8 +36,8 @@ jobs:
       - name: Publish pages
         run: |
           cd gh-pages
-          git config user.name ${{ vars.AUTHOR_NAME }}
-          git config user.email ${{ vars.AUTHOR_EMAIL }}
+          git config user.name "${{ vars.AUTHOR_NAME }}"
+          git config user.email "${{ vars.AUTHOR_EMAIL }}"
           rm -rf *
           mv ../mockjdbc/target/site/* .
           git add -A
