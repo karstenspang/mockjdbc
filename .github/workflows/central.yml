@@ -3,7 +3,7 @@ on:
   release:
     types: [created, edited]
 env:
-  VER: ${{ github.ref_name || GITHUB_REF_NAME }}
+  VER: ${{ github.ref_name }}
 jobs:
   publish:
     runs-on: ubuntu-22.04
