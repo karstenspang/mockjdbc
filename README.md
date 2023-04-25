@@ -35,7 +35,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>1.2.0</version>
+  <version>1.2.1</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -45,8 +45,10 @@ The Maven site can be found on [GitHub Pages](https://karstenspang.github.io/moc
 
 ## Examples
 
-Some examples of code that can be tested using mockjdbc. These can be found in
-`Example.java` in the test sources.
+Some examples of code that can be tested using mockjdbc. Working code can found in
+[`Example.java`](https://github.com/karstenspang/mockjdbc/blob/develop/mockjdbc/src/test/java/io/github/karstenspang/mockjdbc/Example.java).
+The test code is in 
+[`ExampleTest.java`](https://github.com/karstenspang/mockjdbc/blob/develop/mockjdbc/src/test/java/io/github/karstenspang/mockjdbc/ExampleTest.java).
 
 For details, see [the javadoc](https://javadoc.io/doc/io.github.karstenspang/mockjdbc).
 
@@ -88,8 +90,8 @@ public class Connector {
 So, how to test this? You could of course arrange the database to have too
 many connections, and then try to connect, but good luck automating that!
 
-A Junit 5 test case where the connection fails once and then
-succeeds, could be:
+A [Junit 5](https://junit.org/junit5/) test case where the connection
+fails once and then succeeds, could be:
 ```
 import io.github.karstenspang.mockjdbc.ExceptionStep;
 import io.github.karstenspang.mockjdbc.MockDriver;

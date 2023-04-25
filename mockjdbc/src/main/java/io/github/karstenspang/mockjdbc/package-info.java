@@ -1,6 +1,6 @@
 /**
  * A mock JDBC driver delegating to a real JDBC driver,
- * with the possibility of simulating errors.<br>
+ * with the possibility of simulating errors.<p>
  * The driver is a wrap around a real JDBC Driver.
  * The driver is controlled by a program, for example
  * "return a connection the first two times, fail on the third".

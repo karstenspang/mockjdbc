@@ -1,9 +1,16 @@
 package io.github.karstenspang.mockjdbc;
 
+import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
+
 /**
  * A functional that puts a wrap on something.
+ * Method references to the constructors of the auto-generated
+ * wraps in {@link io.github.karstenspang.mockjdbc.wrap},
+ * e.g. {@link ConnectionWrap}{@code ::new}, all
+ * match this interface.
  * @param <W> The type of both the wrap and the wrapped,
- * usually an interface that they both implement.
+ *            meant to be an interface in {@link java.sql}
+ *            that they both implement.
  */
 @FunctionalInterface
 public interface Wrapper<W>{

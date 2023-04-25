@@ -1,10 +1,13 @@
 package io.github.karstenspang.mockjdbc;
 
+import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
- * {@link Step} that wraps the suplied value.
- * @param <W> The wrapped type.
+ * {@link Step} that wraps the supplied value.
+ * @param <W> The wrapped type, e.g. {@link Connection}.
  */
 public class WrapperStep<W> implements Step {
     private Wrapper<W> wrapper;
@@ -12,8 +15,11 @@ public class WrapperStep<W> implements Step {
     
     /**
      * Construct the step.
-     * @param wrapper Creates the wrap.
-     * @param program The steps to pass to {@code wrapper}.
+     * @param wrapper Creates the wrap. Usually a function reference to
+     *        the constructor of a wrap class, e.g. {@link ConnectionWrap}{@code ::new}.
+     * @param program The steps to pass to {@code wrapper}. Usually a 
+     *        {@link List}&lt;{@link Step}&gt;, but it could also be, for example,
+     *        an object that intelligently generates steps on the fly.
      */
     public WrapperStep(Wrapper<W> wrapper,Iterable<Step> program){
         this.wrapper=wrapper;
