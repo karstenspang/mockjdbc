@@ -29,9 +29,9 @@ jobs:
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
       - name: Check out gh-pages
         uses: actions/checkout@v3
-          with:
-            ref: gh-pages
-            path: gh-pages
+        with:
+          ref: gh-pages
+          path: gh-pages
       - name: Publish pages
         run: |
           cd gh-pages
