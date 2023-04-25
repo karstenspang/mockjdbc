@@ -2,11 +2,14 @@ name: Publish to Central
 on:
   release:
     types: [created, edited]
+env:
+  VER: ${{ github.ref_name | env.GITHUB_REF_NAME }}
 jobs:
   publish:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout the tag
+        uses: actions/checkout@v3
       - name: Set up Java with keys for deployment
         uses: actions/setup-java@v3
         with:
@@ -18,9 +21,24 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }} # Substituted with the value stored in the referenced secret
           gpg-passphrase: SIGN_KEY_PASS # Env var that holds the key's passphrase
           cache: maven
-      - name: Publish package and site
-        run: mvn --batch-mode clean deploy site-deploy -Drevision=${{ github.ref_name }} -P release,pages -Dgithub.site.oauth2Token=${{ secrets.NEW_PAGES_TOKEN }}
+      - name: Publish package
+        run: mvn --batch-mode clean install site -Drevision=${{ env.VER }} -P release,pages
         env:
           SIGN_KEY_PASS: ${{ secrets.GPG_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+      - name: Check out gh-pages
+        uses: actions/checkout@v3
+          with:
+            ref: gh-pages
+            path: gh-pages
+      - name: Publish pages
+        run: |
+          cd gh-pages
+          git config user.name ${{ vars.AUTHOR_NAME }}
+          git config user.email ${{ vars.AUTHOR_EMAIL }}
+          rm -rf *
+          mv ../mockjdbc/target/site/* .
+          git add -A
+          git commit -m "Update site for ${{ env.VER }}"
+          git push
