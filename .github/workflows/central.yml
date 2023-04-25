@@ -3,7 +3,7 @@ on:
   release:
     types: [created, edited]
 env:
-  VER: ${{ github.ref_name }}
+  VER: ${{ github.ref_name || env.GITHUB_REF_NAME }}
 jobs:
   publish:
     runs-on: ubuntu-22.04
@@ -41,5 +41,5 @@ jobs:
           mv ../mockjdbc/target/site/* .
           git add -A
           git commit -m "Update site for ${{ env.VER }}"
-          git remote set-url --push origin https://:{{ secrets.PAGES_TOKEN }}@github.com/karstenspang/mockjdbc
+          git remote set-url --push origin "https://:{{ secrets.PAGES_TOKEN }}@github.com/karstenspang/mockjdbc"
           git push
