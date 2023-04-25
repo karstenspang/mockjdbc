@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WrapperStep.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Mock JDBC Driver</a> &gt; <a href="index.source.html" class="el_package">io.github.karstenspang.mockjdbc</a> &gt; <span class="el_source">WrapperStep.java</span></div><h1>WrapperStep.java</h1><pre class="source lang-java linenums">package io.github.karstenspang.mockjdbc;
 
+import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
- * {@link Step} that wraps the suplied value.
- * @param &lt;W&gt; The wrapped type.
+ * {@link Step} that wraps the supplied value.
+ * @param &lt;W&gt; The wrapped type, e.g. {@link Connection}.
  */
 public class WrapperStep&lt;W&gt; implements Step {
     private Wrapper&lt;W&gt; wrapper;
@@ -12,13 +15,16 @@ public class WrapperStep&lt;W&gt; implements Step {
     
     /**
      * Construct the step.
-     * @param wrapper Creates the wrap.
-     * @param program The steps to pass to {@code wrapper}.
+     * @param wrapper Creates the wrap. Usually a function reference to
+     *        the constructor of a wrap class, e.g. {@link ConnectionWrap}{@code ::new}.
+     * @param program The steps to pass to {@code wrapper}. Usually a 
+     *        {@link List}&amp;lt;{@link Step}&amp;gt;, but it could also be, for example,
+     *        an object that intelligently generates steps on the fly.
      */
-<span class="fc" id="L18">    public WrapperStep(Wrapper&lt;W&gt; wrapper,Iterable&lt;Step&gt; program){</span>
-<span class="fc" id="L19">        this.wrapper=wrapper;</span>
-<span class="fc" id="L20">        this.program=new Program(program);</span>
-<span class="fc" id="L21">    }</span>
+<span class="fc" id="L24">    public WrapperStep(Wrapper&lt;W&gt; wrapper,Iterable&lt;Step&gt; program){</span>
+<span class="fc" id="L25">        this.wrapper=wrapper;</span>
+<span class="fc" id="L26">        this.program=new Program(program);</span>
+<span class="fc" id="L27">    }</span>
     
     /**
      * Call the supplier, wrap the result, and return the wrap.
@@ -33,7 +39,7 @@ public class WrapperStep&lt;W&gt; implements Step {
     public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; supplier)
         throws SQLException
     {
-<span class="fc" id="L36">        return (T)wrapper.wrap((W)supplier.get(),program);</span>
+<span class="fc" id="L42">        return (T)wrapper.wrap((W)supplier.get(),program);</span>
     }
     
     /**
@@ -44,12 +50,12 @@ public class WrapperStep&lt;W&gt; implements Step {
     @Override
     public void apply(SQLRunnable action)
     {
-<span class="fc" id="L47">        throw new IllegalArgumentException(&quot;void cannot be wrapped&quot;);</span>
+<span class="fc" id="L53">        throw new IllegalArgumentException(&quot;void cannot be wrapped&quot;);</span>
     }
     
     @Override
     public String toString(){
-<span class="fc" id="L52">        return &quot;WrapperStep: &quot;+String.valueOf(program);</span>
+<span class="fc" id="L58">        return &quot;WrapperStep: &quot;+String.valueOf(program);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

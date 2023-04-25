@@ -102,7 +102,7 @@ public class MockDriver implements Driver {
 <span class="fc" id="L102">        final String newUrl=&quot;jdbc:&quot;+url.split(&quot;:&quot;,3)[2];</span>
 <span class="fc bfc" id="L103" title="All 2 branches covered.">        if (isOurUrl(newUrl)) throw new IllegalArgumentException(&quot;Self referencing URL: &quot;+url);</span>
 <span class="fc" id="L104">        Step step=steps.next();</span>
-<span class="fc" id="L105">        logger.finest(&quot;Apply &quot;+String.valueOf(step)+&quot; to DriverManager.getConnection(&quot;+String.valueOf(newUrl)+&quot;),&quot;+String.valueOf(info)+&quot;)&quot;);</span>
+<span class="fc" id="L105">        logger.finest(&quot;Apply &quot;+String.valueOf(step)+&quot; to DriverManager.getConnection(&quot;+String.valueOf(newUrl)+&quot;,&quot;+String.valueOf(info)+&quot;)&quot;);</span>
 <span class="fc" id="L106">        return step.apply(()-&gt;DriverManager.getConnection(newUrl,info));</span>
     }
     @Override
