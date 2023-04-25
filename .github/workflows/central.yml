@@ -32,6 +32,7 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
+          token: ${{ secrets.PAGES_TOKEN }}
       - name: Publish pages
         run: |
           cd gh-pages
@@ -41,5 +42,4 @@ jobs:
           mv ../mockjdbc/target/site/* .
           git add -A
           git commit -m "Update site for ${{ env.VER }}"
-          git remote set-url --push origin "https://karstenspang:${{ secrets.PAGES_TOKEN }}@github.com/karstenspang/mockjdbc"
           git push
