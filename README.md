@@ -35,7 +35,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>1.2.1</version>
+  <version>1.3.0</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -239,3 +239,81 @@ taking a wrapped object and a program as arguments, thus matching the
 
 [SLF4J Test](http://projects.lidalia.org.uk/slf4j-test/) is used to check
 the log, and thus that the execution took the expected path.
+
+### Complex exeption handling in `close`
+
+Here is a class implementing `AutoCloseable` with an exhaustive exception
+handling in `close()`. The class borrows the connection from the calling
+class. This technique is commonly used to ensure that everything happens
+in the same transaction.
+```
+public class UsesConnection implements AutoCloseable {
+    final private PreparedStatement st1;
+    final private PreparedStatement st2;
+    public UsesConnection(Connection conn)
+        throws SQLException
+    {
+        // Create some statements
+        st1=conn.prepareStatement("select 1");
+        st2=conn.prepareStatement("select 2");
+    }
+    
+    public void doSomething(){
+        // Actual code using st1 and st2 goes here
+    }
+    
+    public void close()
+        throws SQLException
+    {
+        SQLException ex=null;
+        try{
+            st1.close();
+        }
+        catch(SQLException e){
+            ex=e;
+        }
+        try{
+            st2.close();
+        }
+        catch(SQLException e){
+            if (ex==null){
+                ex=e;
+            }
+            else{
+                ex.addSuppressed(e);
+            }
+        }
+        if (ex!=null) throw ex;
+    }
+}
+```
+The case where `close()` fails on both statements:
+```
+@Test
+@DisplayName("If close() fails for both statements, the exception is from the first with the second suppressed")
+public void testClose()
+    throws SQLException
+{
+    try(Connection conn=DriverManager.getConnection("jdbc:h2:mem:","user","pwd")){
+        final SQLException ex1=new SQLException("1");
+        final SQLException ex2=new SQLException("2");
+        final Connection wrappedConnection=new ConnectionWrap(conn,new Program(Arrays.asList(
+            new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
+                new ExceptionStep(ex1)
+            )),
+            new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
+                new ExceptionStep(ex2)
+            ))
+        )));
+        UsesConnection usesConnection=new UsesConnection(wrappedConnection);
+        SQLException ex=assertThrows(SQLException.class,()->usesConnection.close());
+        assertSame(ex1,ex);
+        Throwable[] suppressed=ex.getSuppressed();
+        assertEquals(1,suppressed.length);
+        assertSame(ex2,suppressed[0]);
+    }
+}
+```
+In this example, we already have a connection, but it is wrapped before it is
+passed to the `UsesConnection`constructor. Note that the `Program` is created
+explicitly; normally the `WrapperStep` does that behind the scenes.

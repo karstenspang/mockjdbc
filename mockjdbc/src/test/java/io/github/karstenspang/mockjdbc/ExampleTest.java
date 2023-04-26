@@ -1,8 +1,11 @@
 package io.github.karstenspang.mockjdbc;
 
 import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
+import io.github.karstenspang.mockjdbc.wrap.PreparedStatementWrap;
 import io.github.karstenspang.mockjdbc.wrap.StatementWrap;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -76,5 +79,30 @@ public class ExampleTest {
             LoggingEvent.info("Connecting to jdbc:mock:h2:mem:")
         );
         assertEquals(expectedEvents,events);
+    }
+    
+    @Test
+    @DisplayName("Example 3: If close() fails for both statements, the exception is from the first with the second suppressed")
+    public void testClose()
+        throws SQLException
+    {
+        try(Connection conn=DriverManager.getConnection("jdbc:h2:mem:","user","pwd")){
+            final SQLException ex1=new SQLException("1");
+            final SQLException ex2=new SQLException("2");
+            final Connection wrappedConnection=new ConnectionWrap(conn,new Program(Arrays.asList(
+                new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
+                    new ExceptionStep(ex1)
+                )),
+                new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
+                    new ExceptionStep(ex2)
+                ))
+            )));
+            Example.UsesConnection usesConnection=new Example.UsesConnection(wrappedConnection);
+            SQLException ex=assertThrows(SQLException.class,()->usesConnection.close());
+            assertSame(ex1,ex,"1");
+            Throwable[] suppressed=ex.getSuppressed();
+            assertEquals(1,suppressed.length,"# supp");
+            assertSame(ex2,suppressed[0],"2");
+        }
     }
 }

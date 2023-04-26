@@ -2,6 +2,7 @@ package io.github.karstenspang.mockjdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.slf4j.Logger;
@@ -62,5 +63,45 @@ public class Example {
             conn=DriverManager.getConnection(url,user,password);
         }
         return conn;
+    }
+    
+    public static class UsesConnection implements AutoCloseable {
+        final private PreparedStatement st1;
+        final private PreparedStatement st2;
+        public UsesConnection(Connection conn)
+            throws SQLException
+        {
+            // Create some statements
+            st1=conn.prepareStatement("select 1");
+            st2=conn.prepareStatement("select 2");
+        }
+        
+        public void doSomething(){
+            // Actual code using st1 and st2 goes here
+        }
+        
+        public void close()
+            throws SQLException
+        {
+            SQLException ex=null;
+            try{
+                st1.close();
+            }
+            catch(SQLException e){
+                ex=e;
+            }
+            try{
+                st2.close();
+            }
+            catch(SQLException e){
+                if (ex==null){
+                    ex=e;
+                }
+                else{
+                    ex.addSuppressed(e);
+                }
+            }
+            if (ex!=null) throw ex;
+        }
     }
 }
