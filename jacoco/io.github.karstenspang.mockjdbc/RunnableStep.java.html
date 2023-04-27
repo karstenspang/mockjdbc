@@ -19,16 +19,16 @@ public class RunnableStep implements Step {
 <span class="fc" id="L19">    }</span>
     
     /**
-     * Always throws {@link IllegalArgumentException}, as there is no value to return.
+     * Always throws {@link UnsupportedOperationException}, as there is no value to return.
      * @param &lt;T&gt; The type returned by this method.
      * @param supplier Not used.
-     * @throws IllegalArgumentException always
+     * @throws UnsupportedOperationException always
      * @return nothing
      */
     @Override
     public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; supplier)
     {
-<span class="fc" id="L31">        throw new IllegalArgumentException(&quot;no value to return&quot;);</span>
+<span class="fc" id="L31">        throw new UnsupportedOperationException(&quot;no value to return&quot;);</span>
     }
     
     /**
@@ -48,4 +48,4 @@ public class RunnableStep implements Step {
 <span class="fc" id="L48">        return &quot;RunnableStep&quot;;</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

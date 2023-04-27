@@ -36,14 +36,14 @@ public class SupplierStep implements Step {
     }
     
     /**
-     * Always throws {@link IllegalArgumentException}.
+     * Always throws {@link UnsupportedOperationException}.
      * @param action not used
-     * @throws IllegalArgumentException always
+     * @throws UnsupportedOperationException always
      */
     @Override
     public void apply(SQLRunnable action)
     {
-<span class="fc" id="L46">        throw new IllegalArgumentException(&quot;value can not be returned&quot;);</span>
+<span class="fc" id="L46">        throw new UnsupportedOperationException(&quot;value can not be returned&quot;);</span>
     }
     
     @Override
@@ -51,4 +51,4 @@ public class SupplierStep implements Step {
 <span class="fc" id="L51">        return &quot;SupplierStep&quot;;</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

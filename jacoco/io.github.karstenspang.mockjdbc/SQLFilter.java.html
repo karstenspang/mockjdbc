@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SQLFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Mock JDBC Driver</a> &gt; <a href="index.source.html" class="el_package">io.github.karstenspang.mockjdbc</a> &gt; <span class="el_source">SQLFilter.java</span></div><h1>SQLFilter.java</h1><pre class="source lang-java linenums">package io.github.karstenspang.mockjdbc;
+
+import java.sql.SQLException;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
+
+/**
+ * Like {@link UnaryOperator}, but can throw an {@link SQLException}.
+ * Meant to be used as a target for lambda expressions.
+ * @param &lt;T&gt; the type of the input and the result.
+ */
+@FunctionalInterface
+public interface SQLFilter&lt;T&gt; {
+    /**
+     * Perform any operation on a value.
+     * @param inputValue The data to operate on.
+     * @return the filtered value
+     * @throws SQLException if needed.
+     */
+    T apply(T inputValue)
+        throws SQLException;
+    
+    /**
+     * Returns a composed filter that first applies the {@code before}
+     * filter to its input, and then applies this filter to the result.
+     * @param before the filter to apply before this filter is applied
+     * @return a composed filter that first applies the {@code before}
+     *        filter and then applies this filter.
+     * @throws NullPointerException if {@code before} is {@code null}.
+     */
+    default SQLFilter&lt;T&gt; compose(SQLFilter&lt;T&gt; before)
+    {
+<span class="fc" id="L33">        Objects.requireNonNull(before);</span>
+<span class="fc" id="L34">        return (T t)-&gt;apply(before.apply(t));</span>
+    }
+    
+    /**
+     * Returns a composed filter that first applies this filter to
+     * its input, and then applies the {@code after} filter to the result.
+     * @param after the filter to apply after this filter is applied
+     * @return a composed filter that first applies this filter and then
+     *         applies the {@code after} filter.
+     * @throws NullPointerException if {@code after} is {@code null}.
+     */
+    default SQLFilter&lt;T&gt; andThen(SQLFilter&lt;T&gt; after)
+    {
+<span class="fc" id="L47">        Objects.requireNonNull(after);</span>
+<span class="fc" id="L48">        return (T t)-&gt;after.apply(apply(t));</span>
+    }
+    
+    /**
+     * Returns a filter that always returns its input argument.
+     *
+     * @param &lt;T&gt; the type of the input and output objects to the function
+     * @return a function that always returns its input argument
+     */
+    static &lt;T&gt; SQLFilter&lt;T&gt; identity(){
+<span class="fc" id="L58">        return t-&gt;t;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

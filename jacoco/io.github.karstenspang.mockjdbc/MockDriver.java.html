@@ -85,95 +85,92 @@ public class MockDriver implements Driver {
      *         is does not start with {@code jdbc:mock:}.
      * @throws SQLException if the program dictates it, or connecting
      *         using the real driver fails.
-     * @throws IllegalArgumentException if {@code url} starts with
-     *         {@code &quot;jdbc:mock:mock:&quot;}.
      */
     @Override
     public Connection connect​(final String url,final Properties info)
         throws SQLException
     {
-<span class="fc" id="L95">        Iterator&lt;Step&gt; steps=this.steps.get();</span>
-<span class="fc bfc" id="L96" title="All 2 branches covered.">        if (steps==null){</span>
-<span class="fc" id="L97">            this.steps.set(emptySteps);</span>
-<span class="fc" id="L98">            steps=emptySteps;</span>
+<span class="fc" id="L93">        Iterator&lt;Step&gt; steps=this.steps.get();</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (steps==null){</span>
+<span class="fc" id="L95">            this.steps.set(emptySteps);</span>
+<span class="fc" id="L96">            steps=emptySteps;</span>
         }
-<span class="fc" id="L100">        logger.finest(&quot;connect(&quot;+String.valueOf(url)+&quot;,&quot;+String.valueOf(info)+&quot;)&quot;);</span>
-<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (!isOurUrl(url)) return null;</span>
-<span class="fc" id="L102">        final String newUrl=&quot;jdbc:&quot;+url.split(&quot;:&quot;,3)[2];</span>
-<span class="fc bfc" id="L103" title="All 2 branches covered.">        if (isOurUrl(newUrl)) throw new IllegalArgumentException(&quot;Self referencing URL: &quot;+url);</span>
-<span class="fc" id="L104">        Step step=steps.next();</span>
-<span class="fc" id="L105">        logger.finest(&quot;Apply &quot;+String.valueOf(step)+&quot; to DriverManager.getConnection(&quot;+String.valueOf(newUrl)+&quot;,&quot;+String.valueOf(info)+&quot;)&quot;);</span>
-<span class="fc" id="L106">        return step.apply(()-&gt;DriverManager.getConnection(newUrl,info));</span>
+<span class="fc" id="L98">        logger.finest(&quot;connect(&quot;+String.valueOf(url)+&quot;,&quot;+String.valueOf(info)+&quot;)&quot;);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (!isOurUrl(url)) return null;</span>
+<span class="fc" id="L100">        final String newUrl=&quot;jdbc:&quot;+url.split(&quot;:&quot;,3)[2];</span>
+<span class="fc" id="L101">        Step step=steps.next();</span>
+<span class="fc" id="L102">        logger.finest(&quot;Apply &quot;+String.valueOf(step)+&quot; to DriverManager.getConnection(&quot;+String.valueOf(newUrl)+&quot;,&quot;+String.valueOf(info)+&quot;)&quot;);</span>
+<span class="fc" id="L103">        return step.apply(()-&gt;DriverManager.getConnection(newUrl,info));</span>
     }
     @Override
-<span class="fc" id="L109">    public boolean acceptsURL​(String url){return isOurUrl(url);}</span>
+<span class="fc" id="L106">    public boolean acceptsURL​(String url){return isOurUrl(url);}</span>
     @Override
-<span class="fc" id="L111">    public int getMajorVersion(){return majorVersion;}</span>
+<span class="fc" id="L108">    public int getMajorVersion(){return majorVersion;}</span>
     @Override
-<span class="fc" id="L113">    public int getMinorVersion(){return minorVersion;}</span>
+<span class="fc" id="L110">    public int getMinorVersion(){return minorVersion;}</span>
     @Override
-<span class="fc" id="L115">    public Logger getParentLogger(){return Logger.getLogger(MockDriver.class.getPackage().getName());}</span>
+<span class="fc" id="L112">    public Logger getParentLogger(){return Logger.getLogger(MockDriver.class.getPackage().getName());}</span>
     @Override
-<span class="fc" id="L117">    public DriverPropertyInfo[] getPropertyInfo​(String url, Properties info){return new DriverPropertyInfo[0];}</span>
+<span class="fc" id="L114">    public DriverPropertyInfo[] getPropertyInfo​(String url, Properties info){return new DriverPropertyInfo[0];}</span>
     @Override
-<span class="fc" id="L119">    public boolean jdbcCompliant(){return true;}</span>
+<span class="fc" id="L116">    public boolean jdbcCompliant(){return true;}</span>
     
     private MockDriver()
     {
-<span class="fc" id="L123">        this(pomPropertiesFile);</span>
-<span class="fc" id="L124">    }</span>
+<span class="fc" id="L120">        this(pomPropertiesFile);</span>
+<span class="fc" id="L121">    }</span>
     
     // For testing methods other than connect
     MockDriver(String propertyFile)
-<span class="fc" id="L128">    {</span>
-<span class="fc" id="L129">        steps=new InheritableThreadLocal&lt;&gt;();</span>
+<span class="fc" id="L125">    {</span>
+<span class="fc" id="L126">        steps=new InheritableThreadLocal&lt;&gt;();</span>
         Properties pomProperties;
         try {
-<span class="fc" id="L132">            pomProperties=loadProperties(propertyFile);</span>
+<span class="fc" id="L129">            pomProperties=loadProperties(propertyFile);</span>
         }
-<span class="fc" id="L134">        catch(IOException e){</span>
-<span class="fc" id="L135">            logger.warning(&quot;Could not load property file &quot;+String.valueOf(propertyFile));</span>
-<span class="fc" id="L136">            pomProperties=new Properties();</span>
-<span class="fc" id="L137">        }</span>
+<span class="fc" id="L131">        catch(IOException e){</span>
+<span class="fc" id="L132">            logger.warning(&quot;Could not load property file &quot;+String.valueOf(propertyFile));</span>
+<span class="fc" id="L133">            pomProperties=new Properties();</span>
+<span class="fc" id="L134">        }</span>
         
-<span class="fc" id="L139">        logger.config(&quot;MockDriver version &quot;+String.valueOf(pomProperties.getProperty(&quot;version&quot;)));</span>
-<span class="fc" id="L140">        int[] versionParts=extractVersion(pomProperties.getProperty(&quot;version&quot;));</span>
-<span class="fc bfc" id="L141" title="All 2 branches covered.">        majorVersion=versionParts.length&gt;=1?versionParts[0]:0;</span>
-<span class="fc bfc" id="L142" title="All 2 branches covered.">        minorVersion=versionParts.length&gt;=2?versionParts[1]:0;</span>
-<span class="fc" id="L143">    }</span>
+<span class="fc" id="L136">        logger.config(&quot;MockDriver version &quot;+String.valueOf(pomProperties.getProperty(&quot;version&quot;)));</span>
+<span class="fc" id="L137">        int[] versionParts=extractVersion(pomProperties.getProperty(&quot;version&quot;));</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        majorVersion=versionParts.length&gt;=1?versionParts[0]:0;</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        minorVersion=versionParts.length&gt;=2?versionParts[1]:0;</span>
+<span class="fc" id="L140">    }</span>
     
     private static boolean isOurUrl(String url){
-<span class="fc" id="L146">        return url.startsWith(&quot;jdbc:mock:&quot;);</span>
+<span class="fc" id="L143">        return url.startsWith(&quot;jdbc:mock:&quot;);</span>
     }
     
     private static Properties loadProperties(String fileName)
         throws IOException
     {
-<span class="fc" id="L152">        Properties props=new Properties();</span>
-<span class="fc" id="L153">        ClassLoader loader=Thread.currentThread().getContextClassLoader();</span>
+<span class="fc" id="L149">        Properties props=new Properties();</span>
+<span class="fc" id="L150">        ClassLoader loader=Thread.currentThread().getContextClassLoader();</span>
         // Never null with OpenJDK
-<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        if (loader==null) loader=ClassLoader.getSystemClassLoader();</span>
-<span class="fc" id="L156">        InputStream stream=loader.getResourceAsStream(fileName);</span>
-<span class="fc bfc" id="L157" title="All 2 branches covered.">        if (stream==null) throw new IOException(&quot;Could not open resource &quot;+fileName);</span>
-<span class="fc" id="L158">        try (Reader reader=new InputStreamReader(stream,StandardCharsets.UTF_8)){</span>
-<span class="fc" id="L159">            props.load(reader);</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        if (loader==null) loader=ClassLoader.getSystemClassLoader();</span>
+<span class="fc" id="L153">        InputStream stream=loader.getResourceAsStream(fileName);</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (stream==null) throw new IOException(&quot;Could not open resource &quot;+fileName);</span>
+<span class="fc" id="L155">        try (Reader reader=new InputStreamReader(stream,StandardCharsets.UTF_8)){</span>
+<span class="fc" id="L156">            props.load(reader);</span>
         }
-<span class="fc" id="L161">        return props;</span>
+<span class="fc" id="L158">        return props;</span>
     }
     
     private static int[] extractVersion(String versionString)
     {
-<span class="fc bfc" id="L166" title="All 2 branches covered.">        if (versionString==null) return new int[0];</span>
-<span class="fc" id="L167">        Pattern p=Pattern.compile(&quot;(\\d+(\\.\\d+)*).*&quot;);</span>
-<span class="fc" id="L168">        Matcher m=p.matcher(versionString);</span>
-<span class="fc bfc" id="L169" title="All 2 branches covered.">        if (!m.matches()) return new int[0];</span>
-<span class="fc" id="L170">        String versionPrefix=m.group(1);</span>
-<span class="fc" id="L171">        String[] versionParts=versionPrefix.split(&quot;\\.&quot;);</span>
-<span class="fc" id="L172">        int[] result=new int[versionParts.length];</span>
-<span class="fc bfc" id="L173" title="All 2 branches covered.">        for (int i=0;i&lt;versionParts.length;i++){</span>
-<span class="fc" id="L174">            result[i]=Integer.parseInt(versionParts[i]);</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        if (versionString==null) return new int[0];</span>
+<span class="fc" id="L164">        Pattern p=Pattern.compile(&quot;(\\d+(\\.\\d+)*).*&quot;);</span>
+<span class="fc" id="L165">        Matcher m=p.matcher(versionString);</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        if (!m.matches()) return new int[0];</span>
+<span class="fc" id="L167">        String versionPrefix=m.group(1);</span>
+<span class="fc" id="L168">        String[] versionParts=versionPrefix.split(&quot;\\.&quot;);</span>
+<span class="fc" id="L169">        int[] result=new int[versionParts.length];</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">        for (int i=0;i&lt;versionParts.length;i++){</span>
+<span class="fc" id="L171">            result[i]=Integer.parseInt(versionParts[i]);</span>
         }
-<span class="fc" id="L176">        return result;</span>
+<span class="fc" id="L173">        return result;</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
