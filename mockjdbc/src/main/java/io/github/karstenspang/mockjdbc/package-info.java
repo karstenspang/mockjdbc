@@ -61,7 +61,7 @@
  * The following is logged:
  * <ul>
  *  <li>When the driver is loaded, it logs its version with level <code>CONFIG</code>.</li>
- *  <li>When a program is set in the driver, or a mock is created, the program
+ *  <li>When a program is set in the driver, or a wrap is created, the program
  *      is logged with level <code>FINE</code>.</li>
  *  <li>When a step is applied, it is logged with level <code>FINEST</code>.</li>
  * </ul>
