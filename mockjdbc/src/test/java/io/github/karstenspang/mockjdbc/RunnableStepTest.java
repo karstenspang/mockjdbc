@@ -26,13 +26,13 @@ public class RunnableStepTest{
         assertEquals(1,testValue.get());
     }
     
-    @DisplayName("apply supplier throws IllegalArgumentException")
+    @DisplayName("apply supplier throws UnsupportedOperationException")
     @Test
     public void testSupplierThrows(){
         final AtomicInteger testValue=new AtomicInteger(0);
         final SQLRunnable updateRunnable=new SQLRunnable(){public void run(){testValue.incrementAndGet();}};
         RunnableStep step=new RunnableStep(updateRunnable);
-        assertThrows(IllegalArgumentException.class,()->{step.apply(emptyStringSupplier);});
+        assertThrows(UnsupportedOperationException.class,()->{step.apply(emptyStringSupplier);});
     }
     
     @DisplayName("SQLException is thrown if done by stored runnable")

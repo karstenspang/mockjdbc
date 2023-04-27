@@ -146,15 +146,6 @@ public class MockDriverTest {
     }
     
     @Test
-    @DisplayName("Self-referencing URL throws IllegalArgumentException")
-    public void testSelfRefence()
-        throws SQLException
-    {
-        MockDriver.setProgram(null);
-        assertThrows(IllegalArgumentException.class,()->DriverManager.getConnection("jdbc:mock:mock:",new Properties()));
-    }
-    
-    @Test
     @DisplayName("The driver program set in the parent thread before thread creation will be used by a child thread")
     public void testProgramInteritance()
         throws Exception

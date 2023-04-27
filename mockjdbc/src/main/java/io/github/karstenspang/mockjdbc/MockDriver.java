@@ -85,8 +85,6 @@ public class MockDriver implements Driver {
      *         is does not start with {@code jdbc:mock:}.
      * @throws SQLException if the program dictates it, or connecting
      *         using the real driver fails.
-     * @throws IllegalArgumentException if {@code url} starts with
-     *         {@code "jdbc:mock:mock:"}.
      */
     @Override
     public Connection connect​(final String url,final Properties info)
@@ -100,7 +98,6 @@ public class MockDriver implements Driver {
         logger.finest("connect("+String.valueOf(url)+","+String.valueOf(info)+")");
         if (!isOurUrl(url)) return null;
         final String newUrl="jdbc:"+url.split(":",3)[2];
-        if (isOurUrl(newUrl)) throw new IllegalArgumentException("Self referencing URL: "+url);
         Step step=steps.next();
         logger.finest("Apply "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+","+String.valueOf(info)+")");
         return step.apply(()->DriverManager.getConnection(newUrl,info));

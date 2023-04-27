@@ -38,13 +38,13 @@ public class SupplierStepTest{
         assertEquals(0,testValue.get());
     }
     
-    @DisplayName("apply runnable throws IllegalArgumentException")
+    @DisplayName("apply runnable throws UnsupportedOperationException")
     @Test
     public void testRunnableThrows(){
         final AtomicInteger testValue=new AtomicInteger(0);
         final SQLRunnable updateRunnable=new SQLRunnable(){public void run(){testValue.incrementAndGet();}};
         SupplierStep step=new SupplierStep(someStringSupplier);
-        assertThrows(IllegalArgumentException.class,()->{step.apply(updateRunnable);});
+        assertThrows(UnsupportedOperationException.class,()->{step.apply(updateRunnable);});
     }
     
     @DisplayName("ClassCastException is thrown on type mismatch")

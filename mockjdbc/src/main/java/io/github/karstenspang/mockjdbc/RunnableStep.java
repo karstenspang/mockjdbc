@@ -19,16 +19,16 @@ public class RunnableStep implements Step {
     }
     
     /**
-     * Always throws {@link IllegalArgumentException}, as there is no value to return.
+     * Always throws {@link UnsupportedOperationException}, as there is no value to return.
      * @param <T> The type returned by this method.
      * @param supplier Not used.
-     * @throws IllegalArgumentException always
+     * @throws UnsupportedOperationException always
      * @return nothing
      */
     @Override
     public <T> T apply(SQLSupplier<? extends T> supplier)
     {
-        throw new IllegalArgumentException("no value to return");
+        throw new UnsupportedOperationException("no value to return");
     }
     
     /**

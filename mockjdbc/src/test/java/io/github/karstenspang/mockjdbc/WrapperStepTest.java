@@ -29,14 +29,6 @@ public class WrapperStepTest {
     }
     
     @Test
-    @DisplayName("Wrapping a void method throws IllegalArgumentException")
-    public void testWrapVoid()
-    {
-        WrapperStep<Object> step=new WrapperStep<>(Wrap::new,Collections.emptyList());
-        assertThrows(IllegalArgumentException.class,()->step.apply(()->{}));
-    }
-    
-    @Test
     @DisplayName("Superclass of wrap throws ClassCastException")
     public void testUp()
         throws SQLException

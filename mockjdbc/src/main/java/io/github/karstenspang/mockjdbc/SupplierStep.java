@@ -36,14 +36,14 @@ public class SupplierStep implements Step {
     }
     
     /**
-     * Always throws {@link IllegalArgumentException}.
+     * Always throws {@link UnsupportedOperationException}.
      * @param action not used
-     * @throws IllegalArgumentException always
+     * @throws UnsupportedOperationException always
      */
     @Override
     public void apply(SQLRunnable action)
     {
-        throw new IllegalArgumentException("value can not be returned");
+        throw new UnsupportedOperationException("value can not be returned");
     }
     
     @Override
