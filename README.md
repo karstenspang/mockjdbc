@@ -315,5 +315,5 @@ public void testClose()
 }
 ```
 In this example, we already have a connection, but it is wrapped before it is
-passed to the `UsesConnection`constructor. Note that the `Program` is created
+passed to the `UsesConnection` constructor. Note that the `Program` is created
 explicitly; normally the `WrapperStep` does that behind the scenes.
