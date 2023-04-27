@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConstantStep.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Mock JDBC Driver</a> &gt; <a href="index.source.html" class="el_package">io.github.karstenspang.mockjdbc</a> &gt; <span class="el_source">ConstantStep.java</span></div><h1>ConstantStep.java</h1><pre class="source lang-java linenums">package io.github.karstenspang.mockjdbc;
+
+/**
+ * {@link Step} that returns a constant value.
+ */
+public class ConstantStep implements Step {
+    private Object value;
+    
+    /**
+     * Construct the step.
+     * @param value to be returned by {@link #apply(SQLSupplier)}
+     */
+<span class="fc" id="L13">    public ConstantStep(Object value){</span>
+<span class="fc" id="L14">        this.value=value;</span>
+<span class="fc" id="L15">    }</span>
+    
+    /**
+     * Return the value supplied to the constructor.
+     * @param &lt;T&gt; The type returned by this method.
+     * @param supplier Not used.
+     * @return The value supplied to the constructor.
+     * @throws ClassCastException if the value supplied to the 
+     *         constructor can not be cast to &lt;code&gt;&amp;lt;T&amp;gt;&lt;/code&gt;.
+     */
+    @Override
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; supplier)
+    {
+<span class="fc" id="L29">        return (T)value;</span>
+    }
+    
+    /**
+     * Does nothing.
+     * @param action not used
+     */
+    @Override
+    public void apply(SQLRunnable action)
+    {
+<span class="fc" id="L39">    }</span>
+    
+    @Override
+    public String toString(){
+<span class="fc" id="L43">        return &quot;ConstantStep: &quot;+String.valueOf(value);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>
