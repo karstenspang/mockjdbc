@@ -13,6 +13,9 @@
   <artifactId>mockjdbc</artifactId>
   <name>Mock JDBC Driver</name>
   <url>https://github.com/karstenspang/mockjdbc</url>
+  <scm>
+    <url>https://github.com/karstenspang/mockjdbc</url>
+  </scm>
   <properties>
     <wrap.source.dir>${project.build.directory}/generated-sources/java</wrap.source.dir>
   </properties>
