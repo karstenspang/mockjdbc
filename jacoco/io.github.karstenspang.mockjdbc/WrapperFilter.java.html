@@ -2,26 +2,27 @@
 
 import java.sql.Connection;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
- * A filter that wraps its input with a {@link Program} using a {@link Wrapper}.
+ * A filter that wraps its input with a {@link Supplier}&amp;lt;{@link Step}&amp;gt; using a {@link Wrapper}.
  * @param &lt;W&gt; The wrapped type, e.g. {@link Connection}.
  * @see WrapperStep
  */
 public class WrapperFilter&lt;W&gt; implements SQLFilter&lt;W&gt; {
     private final Wrapper&lt;W&gt; wrapper;
-    private final Program program;
+    private final Supplier&lt;Step&gt; stepSupplier;
     
     /**
-     * Construct the filter, storing the wrapper and the program for use in {@link #apply}.
+     * Construct the filter, storing the wrapper and the supplier of steps for use in {@link #apply}.
      * @param wrapper Creates the wrap.
-     * @param program The steps to pass to {@code wrapper}.
-     * @throws NullPointerException if {@code wrapper} or {@code program} is {@code null}.
+     * @param stepSupplier The supplier of steps to pass to {@code wrapper}.
+     * @throws NullPointerException if {@code wrapper} or {@code stepSupplier} is {@code null}.
      */
-<span class="fc" id="L21">    public WrapperFilter(Wrapper&lt;W&gt; wrapper,Iterable&lt;Step&gt; program){</span>
-<span class="fc" id="L22">        this.wrapper=Objects.requireNonNull(wrapper,&quot;wrapper is null&quot;);</span>
-<span class="fc" id="L23">        this.program=new Program(Objects.requireNonNull(program,&quot;program is null&quot;));</span>
-<span class="fc" id="L24">    }</span>
+<span class="fc" id="L22">    public WrapperFilter(Wrapper&lt;W&gt; wrapper,Supplier&lt;Step&gt; stepSupplier){</span>
+<span class="fc" id="L23">        this.wrapper=Objects.requireNonNull(wrapper,&quot;wrapper is null&quot;);</span>
+<span class="fc" id="L24">        this.stepSupplier=Objects.requireNonNull(stepSupplier,&quot;stepSupplier is null&quot;);</span>
+<span class="fc" id="L25">    }</span>
     
     /**
      * Wrap the input with the stored program using the stored wrapper.
@@ -30,7 +31,7 @@ public class WrapperFilter&lt;W&gt; implements SQLFilter&lt;W&gt; {
      */
     @Override
     public W apply(W input){
-<span class="fc" id="L33">        return wrapper.wrap(input,program);</span>
+<span class="fc" id="L34">        return wrapper.wrap(input,stepSupplier);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

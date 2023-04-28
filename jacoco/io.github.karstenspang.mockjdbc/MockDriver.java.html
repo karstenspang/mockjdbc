@@ -11,9 +11,9 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,57 +22,68 @@ import java.util.regex.Pattern;
  * {@link Driver} that accepts URL's starting with {@code jdbc:mock:}.
  * The rest of the URL will be prepended by {@code jdbc:} and a connection
  * will be opened by {@link DriverManager} with the resulting URL,
- * unless intercepted.
+ * unless intercepted.&lt;p&gt;
+ * The actions of the driver is controlled by a program.
+ * Initially, the program
+ * is one that always returns {@link PassThruStep}, in
+ * other words, real {@link Connection}s are returned.
+ * The program is kept in an {@link InheritableThreadLocal}.
+ * This means
+ * &lt;ul&gt;
+ *  &lt;li&gt;Tests can be run in parallel.&lt;/li&gt;
+ *  &lt;li&gt;If a test involves running code in a child thread,
+ *      the program can be set before creating the thread,
+ *      and it will be inherited by the child.&lt;/li&gt;
+ * &lt;/ul&gt;
+ * Note that the description of {@link InheritableThreadLocal}
+ * is somewhat vague. It says that the value is copied in the
+ * parent thread when &quot;the child thread is created&quot;. Experiments
+ * indicate that this means when &quot;the child {@link Thread}
+ * is constructed&quot;, as you would expect.
  */
 public class MockDriver implements Driver {
     private static final String pomPropertiesFile=&quot;META-INF/maven/io.github.karstenspang/mockjdbc/pom.properties&quot;;
-<span class="fc" id="L29">    private static final Logger logger=Logger.getLogger(MockDriver.class.getName());</span>
+<span class="fc" id="L46">    private static final Logger logger=Logger.getLogger(MockDriver.class.getName());</span>
     private static final MockDriver instance;
-    private static final Iterator&lt;Step&gt; emptySteps;
-    private InheritableThreadLocal&lt;Iterator&lt;Step&gt;&gt; steps;
+    private static final Supplier&lt;Step&gt; emptySteps;
+    private InheritableThreadLocal&lt;Supplier&lt;Step&gt;&gt; stepSupplier;
     private final int majorVersion;
     private final int minorVersion;
     static{
-<span class="fc" id="L36">        emptySteps=new Program(Collections.emptyList()).iterator();</span>
-<span class="fc" id="L37">        instance=new MockDriver();</span>
+<span class="fc" id="L53">        emptySteps=new Program(Collections.emptyList());</span>
+<span class="fc" id="L54">        instance=new MockDriver();</span>
         try{
-<span class="fc" id="L39">            DriverManager.registerDriver(instance);</span>
+<span class="fc" id="L56">            DriverManager.registerDriver(instance);</span>
         }
         // Not expected to happen
-<span class="nc" id="L42">        catch(SQLException e){</span>
-<span class="nc" id="L43">            throw new RuntimeException(e);</span>
-<span class="fc" id="L44">        }</span>
-<span class="fc" id="L45">    }</span>
+<span class="nc" id="L59">        catch(SQLException e){</span>
+<span class="nc" id="L60">            throw new RuntimeException(e);</span>
+<span class="fc" id="L61">        }</span>
+<span class="fc" id="L62">    }</span>
     
     /**
-     * Set the program of the driver. Initially, the program
-     * is one that always returns {@link PassThruStep}, in
-     * other words, real {@link Connection}s are returned.
-     * The program is kept in an {@link InheritableThreadLocal}.
-     * This means
-     * &lt;ul&gt;
-     *  &lt;li&gt;Tests can be run in parallel.&lt;/li&gt;
-     *  &lt;li&gt;If a test involves running code in a child thread,
-     *      the program can be set before creating the thread,
-     *      and it will be inherited by the child.&lt;/li&gt;
-     * &lt;/ul&gt;
-     * Note that the description of {@link InheritableThreadLocal}
-     * is somewhat vague. It says that the value is copied in the
-     * parent thread when &quot;the child thread is created&quot;. Experiments
-     * indicate that this means when &quot;the child {@link Thread}
-     * is constructed&quot;, as you would expect.
+     * Set the program of the driver.
      * @param program Program to use. If {@code null},
      *        the initial program is reinstated.
      */
     public static void setProgram(Iterable&lt;Step&gt; program){
-<span class="fc" id="L68">        logger.fine(&quot;Setting program &quot;+String.valueOf(program));</span>
-<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (program==null){</span>
-<span class="fc" id="L70">            instance.steps.set(emptySteps);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        setStepSupplier(program==null?null:new Program(program));</span>
+<span class="fc" id="L71">    }</span>
+    
+    /**
+     * Set the step provider of the driver.
+     * @param stepSupplier Supplier to use. If {@code null},
+     *        the initial program is reinstated.
+     */
+    public static void setStepSupplier(Supplier&lt;Step&gt; stepSupplier){
+<span class="fc" id="L79">        logger.fine(&quot;Setting step provider &quot;+String.valueOf(stepSupplier));</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (stepSupplier==null){</span>
+<span class="fc" id="L81">            instance.stepSupplier.set(emptySteps);</span>
         }
         else{
-<span class="fc" id="L73">            instance.steps.set(new Program(program).iterator());</span>
+<span class="fc" id="L84">            instance.stepSupplier.set(stepSupplier);</span>
         }
-<span class="fc" id="L75">    }</span>
+<span class="fc" id="L86">    }</span>
     
     /**
      * Takes an URL of the form {@code jdbc:mock:restofurl}, and
@@ -90,87 +101,87 @@ public class MockDriver implements Driver {
     public Connection connect​(final String url,final Properties info)
         throws SQLException
     {
-<span class="fc" id="L93">        Iterator&lt;Step&gt; steps=this.steps.get();</span>
-<span class="fc bfc" id="L94" title="All 2 branches covered.">        if (steps==null){</span>
-<span class="fc" id="L95">            this.steps.set(emptySteps);</span>
-<span class="fc" id="L96">            steps=emptySteps;</span>
+<span class="fc" id="L104">        Supplier&lt;Step&gt; stepSupplier=this.stepSupplier.get();</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (stepSupplier==null){</span>
+<span class="fc" id="L106">            this.stepSupplier.set(emptySteps);</span>
+<span class="fc" id="L107">            stepSupplier=emptySteps;</span>
         }
-<span class="fc" id="L98">        logger.finest(&quot;connect(&quot;+String.valueOf(url)+&quot;,&quot;+String.valueOf(info)+&quot;)&quot;);</span>
-<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (!isOurUrl(url)) return null;</span>
-<span class="fc" id="L100">        final String newUrl=&quot;jdbc:&quot;+url.split(&quot;:&quot;,3)[2];</span>
-<span class="fc" id="L101">        Step step=steps.next();</span>
-<span class="fc" id="L102">        logger.finest(&quot;Apply &quot;+String.valueOf(step)+&quot; to DriverManager.getConnection(&quot;+String.valueOf(newUrl)+&quot;,&quot;+String.valueOf(info)+&quot;)&quot;);</span>
-<span class="fc" id="L103">        return step.apply(()-&gt;DriverManager.getConnection(newUrl,info));</span>
+<span class="fc" id="L109">        logger.finest(&quot;connect(&quot;+String.valueOf(url)+&quot;,&quot;+String.valueOf(info)+&quot;)&quot;);</span>
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (!isOurUrl(url)) return null;</span>
+<span class="fc" id="L111">        final String newUrl=&quot;jdbc:&quot;+url.split(&quot;:&quot;,3)[2];</span>
+<span class="fc" id="L112">        Step step=stepSupplier.get();</span>
+<span class="fc" id="L113">        logger.finest(&quot;Apply &quot;+String.valueOf(step)+&quot; to DriverManager.getConnection(&quot;+String.valueOf(newUrl)+&quot;,&quot;+String.valueOf(info)+&quot;)&quot;);</span>
+<span class="fc" id="L114">        return step.apply(()-&gt;DriverManager.getConnection(newUrl,info));</span>
     }
     @Override
-<span class="fc" id="L106">    public boolean acceptsURL​(String url){return isOurUrl(url);}</span>
+<span class="fc" id="L117">    public boolean acceptsURL​(String url){return isOurUrl(url);}</span>
     @Override
-<span class="fc" id="L108">    public int getMajorVersion(){return majorVersion;}</span>
+<span class="fc" id="L119">    public int getMajorVersion(){return majorVersion;}</span>
     @Override
-<span class="fc" id="L110">    public int getMinorVersion(){return minorVersion;}</span>
+<span class="fc" id="L121">    public int getMinorVersion(){return minorVersion;}</span>
     @Override
-<span class="fc" id="L112">    public Logger getParentLogger(){return Logger.getLogger(MockDriver.class.getPackage().getName());}</span>
+<span class="fc" id="L123">    public Logger getParentLogger(){return Logger.getLogger(MockDriver.class.getPackage().getName());}</span>
     @Override
-<span class="fc" id="L114">    public DriverPropertyInfo[] getPropertyInfo​(String url, Properties info){return new DriverPropertyInfo[0];}</span>
+<span class="fc" id="L125">    public DriverPropertyInfo[] getPropertyInfo​(String url, Properties info){return new DriverPropertyInfo[0];}</span>
     @Override
-<span class="fc" id="L116">    public boolean jdbcCompliant(){return true;}</span>
+<span class="fc" id="L127">    public boolean jdbcCompliant(){return true;}</span>
     
     private MockDriver()
     {
-<span class="fc" id="L120">        this(pomPropertiesFile);</span>
-<span class="fc" id="L121">    }</span>
+<span class="fc" id="L131">        this(pomPropertiesFile);</span>
+<span class="fc" id="L132">    }</span>
     
     // For testing methods other than connect
     MockDriver(String propertyFile)
-<span class="fc" id="L125">    {</span>
-<span class="fc" id="L126">        steps=new InheritableThreadLocal&lt;&gt;();</span>
+<span class="fc" id="L136">    {</span>
+<span class="fc" id="L137">        stepSupplier=new InheritableThreadLocal&lt;&gt;();</span>
         Properties pomProperties;
         try {
-<span class="fc" id="L129">            pomProperties=loadProperties(propertyFile);</span>
+<span class="fc" id="L140">            pomProperties=loadProperties(propertyFile);</span>
         }
-<span class="fc" id="L131">        catch(IOException e){</span>
-<span class="fc" id="L132">            logger.warning(&quot;Could not load property file &quot;+String.valueOf(propertyFile));</span>
-<span class="fc" id="L133">            pomProperties=new Properties();</span>
-<span class="fc" id="L134">        }</span>
+<span class="fc" id="L142">        catch(IOException e){</span>
+<span class="fc" id="L143">            logger.warning(&quot;Could not load property file &quot;+String.valueOf(propertyFile));</span>
+<span class="fc" id="L144">            pomProperties=new Properties();</span>
+<span class="fc" id="L145">        }</span>
         
-<span class="fc" id="L136">        logger.config(&quot;MockDriver version &quot;+String.valueOf(pomProperties.getProperty(&quot;version&quot;)));</span>
-<span class="fc" id="L137">        int[] versionParts=extractVersion(pomProperties.getProperty(&quot;version&quot;));</span>
-<span class="fc bfc" id="L138" title="All 2 branches covered.">        majorVersion=versionParts.length&gt;=1?versionParts[0]:0;</span>
-<span class="fc bfc" id="L139" title="All 2 branches covered.">        minorVersion=versionParts.length&gt;=2?versionParts[1]:0;</span>
-<span class="fc" id="L140">    }</span>
+<span class="fc" id="L147">        logger.config(&quot;MockDriver version &quot;+String.valueOf(pomProperties.getProperty(&quot;version&quot;)));</span>
+<span class="fc" id="L148">        int[] versionParts=extractVersion(pomProperties.getProperty(&quot;version&quot;));</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        majorVersion=versionParts.length&gt;=1?versionParts[0]:0;</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        minorVersion=versionParts.length&gt;=2?versionParts[1]:0;</span>
+<span class="fc" id="L151">    }</span>
     
     private static boolean isOurUrl(String url){
-<span class="fc" id="L143">        return url.startsWith(&quot;jdbc:mock:&quot;);</span>
+<span class="fc" id="L154">        return url.startsWith(&quot;jdbc:mock:&quot;);</span>
     }
     
     private static Properties loadProperties(String fileName)
         throws IOException
     {
-<span class="fc" id="L149">        Properties props=new Properties();</span>
-<span class="fc" id="L150">        ClassLoader loader=Thread.currentThread().getContextClassLoader();</span>
+<span class="fc" id="L160">        Properties props=new Properties();</span>
+<span class="fc" id="L161">        ClassLoader loader=Thread.currentThread().getContextClassLoader();</span>
         // Never null with OpenJDK
-<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        if (loader==null) loader=ClassLoader.getSystemClassLoader();</span>
-<span class="fc" id="L153">        InputStream stream=loader.getResourceAsStream(fileName);</span>
-<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (stream==null) throw new IOException(&quot;Could not open resource &quot;+fileName);</span>
-<span class="fc" id="L155">        try (Reader reader=new InputStreamReader(stream,StandardCharsets.UTF_8)){</span>
-<span class="fc" id="L156">            props.load(reader);</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">        if (loader==null) loader=ClassLoader.getSystemClassLoader();</span>
+<span class="fc" id="L164">        InputStream stream=loader.getResourceAsStream(fileName);</span>
+<span class="fc bfc" id="L165" title="All 2 branches covered.">        if (stream==null) throw new IOException(&quot;Could not open resource &quot;+fileName);</span>
+<span class="fc" id="L166">        try (Reader reader=new InputStreamReader(stream,StandardCharsets.UTF_8)){</span>
+<span class="fc" id="L167">            props.load(reader);</span>
         }
-<span class="fc" id="L158">        return props;</span>
+<span class="fc" id="L169">        return props;</span>
     }
     
     private static int[] extractVersion(String versionString)
     {
-<span class="fc bfc" id="L163" title="All 2 branches covered.">        if (versionString==null) return new int[0];</span>
-<span class="fc" id="L164">        Pattern p=Pattern.compile(&quot;(\\d+(\\.\\d+)*).*&quot;);</span>
-<span class="fc" id="L165">        Matcher m=p.matcher(versionString);</span>
-<span class="fc bfc" id="L166" title="All 2 branches covered.">        if (!m.matches()) return new int[0];</span>
-<span class="fc" id="L167">        String versionPrefix=m.group(1);</span>
-<span class="fc" id="L168">        String[] versionParts=versionPrefix.split(&quot;\\.&quot;);</span>
-<span class="fc" id="L169">        int[] result=new int[versionParts.length];</span>
-<span class="fc bfc" id="L170" title="All 2 branches covered.">        for (int i=0;i&lt;versionParts.length;i++){</span>
-<span class="fc" id="L171">            result[i]=Integer.parseInt(versionParts[i]);</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        if (versionString==null) return new int[0];</span>
+<span class="fc" id="L175">        Pattern p=Pattern.compile(&quot;(\\d+(\\.\\d+)*).*&quot;);</span>
+<span class="fc" id="L176">        Matcher m=p.matcher(versionString);</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if (!m.matches()) return new int[0];</span>
+<span class="fc" id="L178">        String versionPrefix=m.group(1);</span>
+<span class="fc" id="L179">        String[] versionParts=versionPrefix.split(&quot;\\.&quot;);</span>
+<span class="fc" id="L180">        int[] result=new int[versionParts.length];</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        for (int i=0;i&lt;versionParts.length;i++){</span>
+<span class="fc" id="L182">            result[i]=Integer.parseInt(versionParts[i]);</span>
         }
-<span class="fc" id="L173">        return result;</span>
+<span class="fc" id="L184">        return result;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,97 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Program.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Mock JDBC Driver</a> &gt; <a href="index.source.html" class="el_package">io.github.karstenspang.mockjdbc</a> &gt; <span class="el_source">Program.java</span></div><h1>Program.java</h1><pre class="source lang-java linenums">package io.github.karstenspang.mockjdbc;
 
-import java.sql.Connection;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Spliterator;
-import java.util.function.Consumer;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
- * A program is an {@link Iterable} returning {@link Step}s.
+ * A program is an {@link Supplier} returning {@link Step}s
+ * in order from a defined list.
  * If the defined list is exhausted, {@link PassThruStep}s
- * are returned by {@link Iterator#next} of the {@link Iterator}
- * returned by {@link #iterator}.
- * &lt;p&gt;
- * Note: Since indefinitely many steps are returned by
- * {@link Iterator#next}, the methods
- * {@link #forEach}, {@link #spliterator}, and
- * {@link Iterator#forEachRemaining} and {@link Iterator#hasNext}
- * of the returned {@link Iterator}
- * only take the steps supplied to the constructor into account.
+ * are returned by {@link #get}.
  */
-public class Program implements Iterable&lt;Step&gt; {
-    private Iterable&lt;Step&gt; rawProgram;
+public class Program implements Supplier&lt;Step&gt; {
+    private final Iterable&lt;Step&gt; steps;
+    private final Iterator&lt;Step&gt; it;
     
     /**
      * Construct the program from steps.
-     * @param rawProgram the steps
+     * @param steps the steps
+     * @throws NullPointerException if {@code steps} is {@code null}.
      */
-<span class="fc" id="L29">    public Program(Iterable&lt;Step&gt; rawProgram){</span>
-<span class="fc" id="L30">        this.rawProgram=rawProgram;</span>
-<span class="fc" id="L31">    }</span>
+<span class="fc" id="L22">    public Program(Iterable&lt;Step&gt; steps){</span>
+<span class="fc" id="L23">        this.steps=Objects.requireNonNull(steps,&quot;steps is null&quot;);</span>
+<span class="fc" id="L24">        it=steps.iterator();</span>
+<span class="fc" id="L25">    }</span>
     
     /**
-     * Iterator over the program. The iterator has the twist
-     * that {@link Iterator#next} keeps on returning
-     * {@link PassThruStep}s, even if {@link Iterator#hasNext}
-     * returns {@code false}, and thus never throws
-     * {@link NoSuchElementException}.
-     * @return The iterator
+     * Get the next step
+     * @return the next step in the list supplied to the constructor.
+     *         If the list is exhausted, return a {@link PassThruStep}.
      */
     @Override
-    public Iterator&lt;Step&gt; iterator(){
-<span class="fc" id="L43">        return new IteratorExtender&lt;Step&gt;(rawProgram.iterator(),PassThruStep.instance());</span>
-    }
-    
-    private static class IteratorExtender&lt;U&gt; implements Iterator&lt;U&gt;
-    {
-        private final Iterator&lt;U&gt; rawIterator;
-        private final U tailValue;
-<span class="fc" id="L50">        public IteratorExtender(Iterator&lt;U&gt; rawIterator,U tailValue){</span>
-<span class="fc" id="L51">            this.rawIterator=rawIterator;</span>
-<span class="fc" id="L52">            this.tailValue=tailValue;</span>
-<span class="fc" id="L53">        }</span>
-        @Override
-        public U next(){
-<span class="fc bfc" id="L56" title="All 2 branches covered.">            if (rawIterator.hasNext()) return rawIterator.next();</span>
-<span class="fc" id="L57">            return tailValue;</span>
-        }
-        @Override
-<span class="fc" id="L60">        public boolean hasNext(){return rawIterator.hasNext();}</span>
-    
-        @Override
-        public void forEachRemaining​(Consumer&lt;? super U&gt; action){
-<span class="fc" id="L64">            rawIterator.forEachRemaining(action);</span>
-<span class="fc" id="L65">        }</span>
+    public Step get(){
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (it.hasNext()) return it.next();</span>
+<span class="fc" id="L35">        return PassThruStep.instance();</span>
     }
     
     /**
-     * Performs the given action for each element of the
-     * raw program supplied to the constructor.
-     * @param action The action to be performed for each element
-     */
-    @Override
-    public void forEach​(Consumer&lt;? super Step&gt; action){
-<span class="fc" id="L75">        rawProgram.forEach(action);</span>
-<span class="fc" id="L76">    }</span>
-    
-    /**
-     * Creates a {@link Spliterator} over the elements described by
-     * the raw program supplied to the constructor.
-     * @return the spliterator
-     */
-    @Override
-    public Spliterator&lt;Step&gt; spliterator(){
-<span class="fc" id="L85">        return rawProgram.spliterator();</span>
-    }
-    
-    /**
-     * The string represetation of the program.
+     * The string represetation of the steps.
      * @return the string represetation
      */
     @Override
     public String toString(){
-<span class="fc" id="L94">        return String.valueOf(rawProgram);</span>
+<span class="fc" id="L44">        return String.valueOf(steps);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -3,34 +3,48 @@
 import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
 import java.sql.Connection;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * {@link Step} that wraps the supplied value.
+ * The step is a {@link FilterStep} with a {@link WrapperFilter}.
  * @param &lt;W&gt; The wrapped type, e.g. {@link Connection}.
  */
 public class WrapperStep&lt;W&gt; extends FilterStep&lt;W&gt; {
-    private final Iterable&lt;Step&gt; program;
+    private final Supplier&lt;Step&gt; stepSupplier;
     
     /**
-     * Construct the step. The step is a {@link FilterStep} with a
-     * {@link WrapperFilter}.
+     * Construct the step from a {@link Supplier}&amp;lt;{@link Step}&amp;gt;.
      * @param wrapper The wrapper passed to the {@link WrapperFilter}.
      *        Usually a function reference to the constructor of
      *        a wrap class, e.g. {@link ConnectionWrap}{@code ::new}.
-     * @param program The steps passed to the {@link WrapperFilter}
-     *        to use in {@code wrapper}. Usually a 
-     *        {@link List}&amp;lt;{@link Step}&amp;gt;, but it could also be, for example,
+     * @param stepSupplier The supplier of steps passed to the {@link WrapperFilter}
+     *        to use in {@code wrapper}. Could be, for example,
      *        an object that intelligently generates steps on the fly.
-     * @throws NullPointerException if {@code wrapper} or {@code program} is {@code null}.
+     * @throws NullPointerException if {@code wrapper} or {@code stepSupplier} is {@code null}.
      */
-    public WrapperStep(Wrapper&lt;W&gt; wrapper,Iterable&lt;Step&gt; program){
-<span class="fc" id="L27">        super(new WrapperFilter&lt;&gt;(wrapper,program));</span>
-<span class="fc" id="L28">        this.program=program;</span>
+    public WrapperStep(Wrapper&lt;W&gt; wrapper,Supplier&lt;Step&gt; stepSupplier){
+<span class="fc" id="L27">        super(new WrapperFilter&lt;&gt;(wrapper,stepSupplier));</span>
+<span class="fc" id="L28">        this.stepSupplier=stepSupplier;</span>
 <span class="fc" id="L29">    }</span>
+    
+    /**
+     * Construct the step from a {@link Iterable}&amp;lt;{@link Step}&amp;gt;.
+     * @param wrapper The wrapper passed to the {@link WrapperFilter}.
+     *        Usually a function reference to the constructor of
+     *        a wrap class, e.g. {@link ConnectionWrap}{@code ::new}.
+     * @param steps The steps passed to the {@link WrapperFilter}
+     *        to use in {@code wrapper}. Usually a 
+     *        {@link List}&amp;lt;{@link Step}&amp;gt;.
+     * @throws NullPointerException if {@code wrapper} or {@code steps} is {@code null}.
+     */
+    public WrapperStep(Wrapper&lt;W&gt; wrapper,Iterable&lt;Step&gt; steps){
+<span class="fc" id="L42">        this(wrapper,new Program(steps));</span>
+<span class="fc" id="L43">    }</span>
     
     @Override
     public String toString(){
-<span class="fc" id="L33">        return &quot;WrapperStep: &quot;+String.valueOf(program);</span>
+<span class="fc" id="L47">        return &quot;WrapperStep: &quot;+String.valueOf(stepSupplier);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

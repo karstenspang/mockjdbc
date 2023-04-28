@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RecursiveWrapperStepSupplier.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Mock JDBC Driver</a> &gt; <a href="index.source.html" class="el_package">io.github.karstenspang.mockjdbc</a> &gt; <span class="el_source">RecursiveWrapperStepSupplier.java</span></div><h1>RecursiveWrapperStepSupplier.java</h1><pre class="source lang-java linenums">package io.github.karstenspang.mockjdbc;
+
+import java.sql.SQLException;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+
+/**
+ * Supplier of steps that wraps every result with this supplier.
+ * Specifically, the steps act like a {@link WrapperStep} if the result
+ * has a known {@link Wrapper}, and a {@link PassThruStep} otherwise.
+ * The created wraps have this supplier as their program. The result is that
+ * every JDBC method call will go through a wrap. The effect of this is
+ * that all calls will be logged with level {@link Level#FINEST}, corresponding
+ * to {@code TRACE} in most logging backends. If you configure your backend to
+ * log {@code io.github.karstenspang.mockjdbc} at trace level, you will get a
+ * complete log of all JDBC calls, including arguments and returned results.
+ */
+public class RecursiveWrapperStepSupplier implements Supplier&lt;Step&gt; {
+<span class="fc" id="L19">    private static final RecursiveWrapperStepSupplier instance=new RecursiveWrapperStepSupplier();</span>
+<span class="fc" id="L20">    private static final RecursiveWrapperStep stepInstance=new RecursiveWrapperStep();</span>
+    
+    /**
+     * Get the instance
+     * @return (the only) instance
+     */
+<span class="fc" id="L26">    public static RecursiveWrapperStepSupplier instance(){return instance;}</span>
+    
+    /**
+     * Get the step
+     * @return (the only) step instance
+     */
+    @Override
+<span class="fc" id="L33">    public Step get(){return stepInstance;}</span>
+    
+    /**
+     * Get the string representation
+     * @return the string representation
+     */
+    @Override
+<span class="fc" id="L40">    public String toString(){return &quot;RecursiveWrapperStepSupplier&quot;;}</span>
+    
+    // Important that CallableStatement, PreparedStatement, and Statement come in that order
+<span class="fc" id="L43">    private static final ClassWrapper&lt;?&gt;[] classWrappers={</span>
+        new ClassWrapper&lt;java.sql.Array            &gt;(java.sql.Array.class            ,io.github.karstenspang.mockjdbc.wrap.ArrayWrap::new            ),
+        new ClassWrapper&lt;java.sql.Blob             &gt;(java.sql.Blob.class             ,io.github.karstenspang.mockjdbc.wrap.BlobWrap::new             ),
+        new ClassWrapper&lt;java.sql.CallableStatement&gt;(java.sql.CallableStatement.class,io.github.karstenspang.mockjdbc.wrap.CallableStatementWrap::new),
+        new ClassWrapper&lt;java.sql.Clob             &gt;(java.sql.Clob.class             ,io.github.karstenspang.mockjdbc.wrap.ClobWrap::new             ),
+        new ClassWrapper&lt;java.sql.Connection       &gt;(java.sql.Connection.class       ,io.github.karstenspang.mockjdbc.wrap.ConnectionWrap::new       ),
+        new ClassWrapper&lt;java.sql.DatabaseMetaData &gt;(java.sql.DatabaseMetaData.class ,io.github.karstenspang.mockjdbc.wrap.DatabaseMetaDataWrap::new ),
+        new ClassWrapper&lt;java.sql.NClob            &gt;(java.sql.NClob.class            ,io.github.karstenspang.mockjdbc.wrap.NClobWrap::new            ),
+        new ClassWrapper&lt;java.sql.ParameterMetaData&gt;(java.sql.ParameterMetaData.class,io.github.karstenspang.mockjdbc.wrap.ParameterMetaDataWrap::new),
+        new ClassWrapper&lt;java.sql.PreparedStatement&gt;(java.sql.PreparedStatement.class,io.github.karstenspang.mockjdbc.wrap.PreparedStatementWrap::new),
+        new ClassWrapper&lt;java.sql.Ref              &gt;(java.sql.Ref.class              ,io.github.karstenspang.mockjdbc.wrap.RefWrap::new              ),
+        new ClassWrapper&lt;java.sql.ResultSet        &gt;(java.sql.ResultSet.class        ,io.github.karstenspang.mockjdbc.wrap.ResultSetWrap::new        ),
+        new ClassWrapper&lt;java.sql.ResultSetMetaData&gt;(java.sql.ResultSetMetaData.class,io.github.karstenspang.mockjdbc.wrap.ResultSetMetaDataWrap::new),
+        new ClassWrapper&lt;java.sql.RowId            &gt;(java.sql.RowId.class            ,io.github.karstenspang.mockjdbc.wrap.RowIdWrap::new            ),
+        new ClassWrapper&lt;java.sql.Savepoint        &gt;(java.sql.Savepoint.class        ,io.github.karstenspang.mockjdbc.wrap.SavepointWrap::new        ),
+        new ClassWrapper&lt;java.sql.SQLData          &gt;(java.sql.SQLData.class          ,io.github.karstenspang.mockjdbc.wrap.SQLDataWrap::new          ),
+        new ClassWrapper&lt;java.sql.SQLInput         &gt;(java.sql.SQLInput.class         ,io.github.karstenspang.mockjdbc.wrap.SQLInputWrap::new         ),
+        new ClassWrapper&lt;java.sql.SQLOutput        &gt;(java.sql.SQLOutput.class        ,io.github.karstenspang.mockjdbc.wrap.SQLOutputWrap::new        ),
+        new ClassWrapper&lt;java.sql.SQLType          &gt;(java.sql.SQLType.class          ,io.github.karstenspang.mockjdbc.wrap.SQLTypeWrap::new          ),
+        new ClassWrapper&lt;java.sql.SQLXML           &gt;(java.sql.SQLXML.class           ,io.github.karstenspang.mockjdbc.wrap.SQLXMLWrap::new           ),
+        new ClassWrapper&lt;java.sql.Statement        &gt;(java.sql.Statement.class        ,io.github.karstenspang.mockjdbc.wrap.StatementWrap::new        ),
+        new ClassWrapper&lt;java.sql.Struct           &gt;(java.sql.Struct.class           ,io.github.karstenspang.mockjdbc.wrap.StructWrap::new           )
+    };
+    
+    private static class ClassWrapper&lt;T&gt; {
+        private final Class&lt;T&gt; clazz;
+        private final Wrapper&lt;T&gt; wrapper;
+        public ClassWrapper(Class&lt;T&gt; clazz,Wrapper&lt;T&gt; wrapper)
+<span class="fc" id="L71">        {</span>
+<span class="fc" id="L72">            this.clazz=clazz;</span>
+<span class="fc" id="L73">            this.wrapper=wrapper;</span>
+<span class="fc" id="L74">        }</span>
+        public T wrapIfMatch(Object o){
+            T wrapped;
+            try{
+<span class="fc" id="L78">                wrapped=clazz.cast(o);</span>
+            }
+<span class="fc" id="L80">            catch(ClassCastException e){</span>
+<span class="fc" id="L81">                return null;</span>
+<span class="fc" id="L82">            }</span>
+<span class="fc" id="L83">            return wrapper.wrap(wrapped,instance);</span>
+        }
+    }
+    
+    private static class RecursiveWrapperStep extends PassThruStep {
+        @Override
+        public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; supplier)
+            throws SQLException
+        {
+<span class="fc" id="L92">            T result=supplier.get();</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            for (ClassWrapper&lt;?&gt; classWrapper:classWrappers){</span>
+                @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L95">                T wrap=(T)classWrapper.wrapIfMatch(result);</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">                if (wrap!=null) return wrap;</span>
+            }
+<span class="fc" id="L98">            return result;</span>
+        }
+        @Override
+<span class="fc" id="L101">        public String toString(){return &quot;RecursiveWrapperStep&quot;;}</span>
+    }
+    
+    private RecursiveWrapperStepSupplier(){}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
