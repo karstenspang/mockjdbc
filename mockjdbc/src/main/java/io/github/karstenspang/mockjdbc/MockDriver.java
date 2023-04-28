@@ -11,9 +11,9 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,18 +22,35 @@ import java.util.regex.Pattern;
  * {@link Driver} that accepts URL's starting with {@code jdbc:mock:}.
  * The rest of the URL will be prepended by {@code jdbc:} and a connection
  * will be opened by {@link DriverManager} with the resulting URL,
- * unless intercepted.
+ * unless intercepted.<p>
+ * The actions of the driver is controlled by a program.
+ * Initially, the program
+ * is one that always returns {@link PassThruStep}, in
+ * other words, real {@link Connection}s are returned.
+ * The program is kept in an {@link InheritableThreadLocal}.
+ * This means
+ * <ul>
+ *  <li>Tests can be run in parallel.</li>
+ *  <li>If a test involves running code in a child thread,
+ *      the program can be set before creating the thread,
+ *      and it will be inherited by the child.</li>
+ * </ul>
+ * Note that the description of {@link InheritableThreadLocal}
+ * is somewhat vague. It says that the value is copied in the
+ * parent thread when "the child thread is created". Experiments
+ * indicate that this means when "the child {@link Thread}
+ * is constructed", as you would expect.
  */
 public class MockDriver implements Driver {
     private static final String pomPropertiesFile="META-INF/maven/io.github.karstenspang/mockjdbc/pom.properties";
     private static final Logger logger=Logger.getLogger(MockDriver.class.getName());
     private static final MockDriver instance;
-    private static final Iterator<Step> emptySteps;
-    private InheritableThreadLocal<Iterator<Step>> steps;
+    private static final Supplier<Step> emptySteps;
+    private InheritableThreadLocal<Supplier<Step>> stepSupplier;
     private final int majorVersion;
     private final int minorVersion;
     static{
-        emptySteps=new Program(Collections.emptyList()).iterator();
+        emptySteps=new Program(Collections.emptyList());
         instance=new MockDriver();
         try{
             DriverManager.registerDriver(instance);
@@ -45,32 +62,26 @@ public class MockDriver implements Driver {
     }
     
     /**
-     * Set the program of the driver. Initially, the program
-     * is one that always returns {@link PassThruStep}, in
-     * other words, real {@link Connection}s are returned.
-     * The program is kept in an {@link InheritableThreadLocal}.
-     * This means
-     * <ul>
-     *  <li>Tests can be run in parallel.</li>
-     *  <li>If a test involves running code in a child thread,
-     *      the program can be set before creating the thread,
-     *      and it will be inherited by the child.</li>
-     * </ul>
-     * Note that the description of {@link InheritableThreadLocal}
-     * is somewhat vague. It says that the value is copied in the
-     * parent thread when "the child thread is created". Experiments
-     * indicate that this means when "the child {@link Thread}
-     * is constructed", as you would expect.
+     * Set the program of the driver.
      * @param program Program to use. If {@code null},
      *        the initial program is reinstated.
      */
     public static void setProgram(Iterable<Step> program){
-        logger.fine("Setting program "+String.valueOf(program));
-        if (program==null){
-            instance.steps.set(emptySteps);
+        setStepSupplier(program==null?null:new Program(program));
+    }
+    
+    /**
+     * Set the step provider of the driver.
+     * @param stepSupplier Supplier to use. If {@code null},
+     *        the initial program is reinstated.
+     */
+    public static void setStepSupplier(Supplier<Step> stepSupplier){
+        logger.fine("Setting step provider "+String.valueOf(stepSupplier));
+        if (stepSupplier==null){
+            instance.stepSupplier.set(emptySteps);
         }
         else{
-            instance.steps.set(new Program(program).iterator());
+            instance.stepSupplier.set(stepSupplier);
         }
     }
     
@@ -90,15 +101,15 @@ public class MockDriver implements Driver {
     public Connection connect​(final String url,final Properties info)
         throws SQLException
     {
-        Iterator<Step> steps=this.steps.get();
-        if (steps==null){
-            this.steps.set(emptySteps);
-            steps=emptySteps;
+        Supplier<Step> stepSupplier=this.stepSupplier.get();
+        if (stepSupplier==null){
+            this.stepSupplier.set(emptySteps);
+            stepSupplier=emptySteps;
         }
         logger.finest("connect("+String.valueOf(url)+","+String.valueOf(info)+")");
         if (!isOurUrl(url)) return null;
         final String newUrl="jdbc:"+url.split(":",3)[2];
-        Step step=steps.next();
+        Step step=stepSupplier.get();
         logger.finest("Apply "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+","+String.valueOf(info)+")");
         return step.apply(()->DriverManager.getConnection(newUrl,info));
     }
@@ -123,7 +134,7 @@ public class MockDriver implements Driver {
     // For testing methods other than connect
     MockDriver(String propertyFile)
     {
-        steps=new InheritableThreadLocal<>();
+        stepSupplier=new InheritableThreadLocal<>();
         Properties pomProperties;
         try {
             pomProperties=loadProperties(propertyFile);

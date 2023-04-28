@@ -1,48 +1,43 @@
 package io.github.karstenspang.mockjdbc;
 
-import java.util.Iterator;
+import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /**
  * Base class for wraps.
  * Implements an interface by passing method calls onto another
- * object implementing the same interface. A step from a
- * program is applied to the method call.
+ * object implementing the same interface. A {@link Step} from a
+ * {@link Supplier} is applied to the method call.
  */
 public class Wrap {
     static Logger logger=Logger.getLogger(Wrap.class.getName());
     /** The wrapped object */
     protected final Object wrapped;
     /** Steps to apply */
-    protected final Iterator<Step> steps;
-    private Program program;
+    protected final Supplier<Step> stepSupplier;
     /**
      * Wrap an object
      * @param wrapped Object to wrap
-     * @param program Program to wrap the object with. {@link Program#iterator()}
-     * is called once in the constructor.
-     * @throws NullPointerException if {@code wrapped} or {@code program} is {@code null}.
+     * @param stepSupplier Supplier of steps to wrap the object with.
+     * @throws NullPointerException if {@code wrapped} or {@code stepSupplier} is {@code null}.
      */
-    public Wrap(Object wrapped,Program program){
-        this(Wrap.class,wrapped,program);
+    public Wrap(Object wrapped,Supplier<Step> stepSupplier){
+        this(Wrap.class,wrapped,stepSupplier);
     }
     
     /**
      * Wrap an object
      * @param clazz Class of the wrap, for logging purposes.
      * @param wrapped Object to wrap
-     * @param program Program to wrap the object with. {@link Program#iterator()}
-     * is called once in the constructor.
-     * @throws NullPointerException if {@code wrapped} or {@code program} is {@code null}.
+     * @param stepSupplier Supplier of steps to wrap the object with.
+     * @throws NullPointerException if {@code wrapped} or {@code stepSupplier} is {@code null}.
      */
-    protected Wrap(Class<? extends Wrap> clazz,Object wrapped,Program program){
-        if (wrapped==null) throw new NullPointerException("null can not be wrapped");
-        if (program==null) throw new NullPointerException("program can not be null");
+    protected Wrap(Class<? extends Wrap> clazz,Object wrapped,Supplier<Step> stepSupplier){
+        this.wrapped=Objects.requireNonNull(wrapped,"wrapped is null");
+        this.stepSupplier=Objects.requireNonNull(stepSupplier,"stepSupplier is null");
         Logger logger=Logger.getLogger(clazz.getName());
-        logger.fine("Wrapping "+String.valueOf(wrapped)+" in "+clazz.getName()+ "with program "+String.valueOf(program));
-        this.wrapped=wrapped;
-        this.program=program;
-        this.steps=program.iterator();
+        logger.fine("Wrapping "+String.valueOf(wrapped)+" in "+clazz.getName()+ "with step supplier "+String.valueOf(stepSupplier));
     }
     
     /**
@@ -67,12 +62,12 @@ public class Wrap {
     /**
      * Get the string representation
      * @return The representation of the actual wrap class,
-     *         of the wrapped object, and of the program.
+     *         of the wrapped object, and of the step supplier.
      */
     @Override
     public String toString(){
         return getClass().getName()+
             ":{wrapped:"+wrapped.toString()+
-            ",program:"+program.toString()+"}";
+            ",stepSupplier:"+stepSupplier.toString()+"}";
     }
 }

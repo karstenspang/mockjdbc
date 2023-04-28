@@ -19,7 +19,7 @@
  * The wraps have constructors that take an object to be wrapped and a
  * {@link io.github.karstenspang.mockjdbc.Program}, thus matching the signature of
  * {@link io.github.karstenspang.mockjdbc.Wrapper}, for example
- * {@link io.github.karstenspang.mockjdbc.wrap.ConnectionWrap#ConnectionWrap(java.sql.Connection,io.github.karstenspang.mockjdbc.Program)}
+ * {@link io.github.karstenspang.mockjdbc.wrap.ConnectionWrap#ConnectionWrap(java.sql.Connection,java.util.function.Supplier)}
  * matches {@link io.github.karstenspang.mockjdbc.Wrapper}&lt;{@link java.sql.Connection}&gt;.
  * <h3>Exceptions</h3>
  * The vast majority of the methods of the interfaces in {@link java.sql}

@@ -1,6 +1,7 @@
 package io.github.karstenspang.mockjdbc;
 
 import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
+import java.util.function.Supplier;
 
 /**
  * A functional that puts a wrap on something.
@@ -17,8 +18,8 @@ public interface Wrapper<W>{
     /**
      * Wrap an object.
      * @param wrapped Object to be wrapped.
-     * @param program The program for the wrap.
+     * @param stepSupplier The supplier of steps for the wrap.
      * @return the wrap of the object.
      */
-    W wrap(W wrapped,Program program);
+    W wrap(W wrapped,Supplier<Step> stepSupplier);
 }

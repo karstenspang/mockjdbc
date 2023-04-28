@@ -90,6 +90,7 @@ public class WrapGenerator {
             writer.write("import "+basePackageName+".Wrapper;\n");
             writer.write("import "+ifClass.getCanonicalName()+";\n");
             writer.write("import java.util.Arrays;\n");
+            writer.write("import java.util.function.Supplier;\n");
             writer.write("import java.util.logging.Logger;\n");
             writer.write("\n");
             writer.write("/**\n");
@@ -102,13 +103,13 @@ public class WrapGenerator {
             writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
             writer.write("     * Note that this constructor can be used as a target for {@link Wrapper}<code>&lt;</code>{@link "+ifClass.getSimpleName()+"}<code>&gt;</code>.\n");
             writer.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
-            writer.write("     * @param program {@link Program} to wrap the object with\n");
+            writer.write("     * @param stepSupplier {@link Supplier}&lt;{@link Step}&lt; to wrap the object with\n");
             writer.write("     */\n");
-            writer.write("     public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Program program){\n");
-            writer.write("         this("+ifClass.getSimpleName()+"Wrap.class,wrapped,program);\n");
+            writer.write("     public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
+            writer.write("         this("+ifClass.getSimpleName()+"Wrap.class,wrapped,stepSupplier);\n");
             writer.write("     }\n");
-            writer.write("     protected "+ifClass.getSimpleName()+"Wrap(Class<? extends "+ifClass.getSimpleName()+"Wrap> clazz,"+ifClass.getSimpleName()+" wrapped,Program program){\n");
-            writer.write("         super(clazz,wrapped,program);\n");
+            writer.write("     protected "+ifClass.getSimpleName()+"Wrap(Class<? extends "+ifClass.getSimpleName()+"Wrap> clazz,"+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
+            writer.write("         super(clazz,wrapped,stepSupplier);\n");
             writer.write("     }\n");
             writer.write("\n");
             writer.write("     @SuppressWarnings(\"unchecked\")\n");
@@ -121,7 +122,7 @@ public class WrapGenerator {
                 writer.write("    public boolean isWrapperFor​(Class<?> iface)\n");
                 writer.write("        throws java.sql.SQLException\n");
                 writer.write("    {\n");
-                writer.write("        Step step=steps.next();\n");
+                writer.write("        Step step=stepSupplier.get();\n");
                 writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".isWrapperFor​(\"+String.valueOf(iface)+\")\");\n");
                 writer.write("        return step.apply(()->getWrapped"+ifClass.getSimpleName()+"().isWrapperFor​(iface));\n");
                 writer.write("    }\n");
@@ -129,9 +130,9 @@ public class WrapGenerator {
                 writer.write("    public <T> T unwrap​(Class<T> iface)\n");
                 writer.write("        throws java.sql.SQLException\n");
                 writer.write("    {\n");
-                writer.write("        Step step=steps.next();\n");
+                writer.write("        Step step=stepSupplier.get();\n");
                 writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".unWrap(\"+String.valueOf(iface)+\")\");\n");
-                writer.write("        return steps.next().apply(()->getWrapped"+ifClass.getSimpleName()+"().unwrap(iface));\n");
+                writer.write("        return stepSupplier.get().apply(()->getWrapped"+ifClass.getSimpleName()+"().unwrap(iface));\n");
                 writer.write("    }\n");
             }
             for (Method method:ifClass.getDeclaredMethods()){
@@ -188,7 +189,7 @@ public class WrapGenerator {
                 if (!exceptions.contains(SQLException.class)){
                     writer.write("        try{\n");
                 }
-                writer.write("        Step step=steps.next();\n");
+                writer.write("        Step step=stepSupplier.get();\n");
                 writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+"."+method.getName()+"(\"");
                 pno=0;
                 for (Class<?> param:method.getParameterTypes()){
@@ -206,7 +207,7 @@ public class WrapGenerator {
                 writer.write("+\")\");\n");
                 writer.write("        ");
                 if (!"void".equals(method.getGenericReturnType().getTypeName())){
-                    writer.write("return ");
+                    writer.write(method.getGenericReturnType().getTypeName()+" result=");
                 }
                 writer.write("step.apply(()->getWrapped"+ifClass.getSimpleName()+"()."+method.getName()+"(");
                 for (int a=0;a<method.getParameterCount();a++){
@@ -216,6 +217,17 @@ public class WrapGenerator {
                     writer.write("p"+String.valueOf(a));
                 }
                 writer.write("));\n");
+                if (!"void".equals(method.getGenericReturnType().getTypeName())){
+                    writer.write("        logger.finest(\"Result: \"+");
+                    if (method.getReturnType().isArray()){
+                        writer.write("Arrays.toString(result)");
+                    }
+                    else{
+                        writer.write("String.valueOf(result)");
+                    }
+                    writer.write(");\n");
+                    writer.write("        return result;\n");
+                }
                 if (!exceptions.contains(SQLException.class)){
                     writer.write("        }\n");
                     if (!exceptions.isEmpty()){
@@ -231,7 +243,7 @@ public class WrapGenerator {
                         writer.write("        }\n");
                     }
                     writer.write("        catch(java.sql.SQLException e){\n");
-                    writer.write("            throw new IllegalStateException(\"unexpected exception\",e);\n");
+                    writer.write("            throw new UnsupportedOperationException(\"unsupported exception\",e);\n");
                     writer.write("        }\n");
                 }
                 writer.write("    }\n");

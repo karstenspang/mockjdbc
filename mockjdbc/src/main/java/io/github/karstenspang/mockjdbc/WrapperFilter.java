@@ -2,25 +2,26 @@ package io.github.karstenspang.mockjdbc;
 
 import java.sql.Connection;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
- * A filter that wraps its input with a {@link Program} using a {@link Wrapper}.
+ * A filter that wraps its input with a {@link Supplier}&lt;{@link Step}&gt; using a {@link Wrapper}.
  * @param <W> The wrapped type, e.g. {@link Connection}.
  * @see WrapperStep
  */
 public class WrapperFilter<W> implements SQLFilter<W> {
     private final Wrapper<W> wrapper;
-    private final Program program;
+    private final Supplier<Step> stepSupplier;
     
     /**
-     * Construct the filter, storing the wrapper and the program for use in {@link #apply}.
+     * Construct the filter, storing the wrapper and the supplier of steps for use in {@link #apply}.
      * @param wrapper Creates the wrap.
-     * @param program The steps to pass to {@code wrapper}.
-     * @throws NullPointerException if {@code wrapper} or {@code program} is {@code null}.
+     * @param stepSupplier The supplier of steps to pass to {@code wrapper}.
+     * @throws NullPointerException if {@code wrapper} or {@code stepSupplier} is {@code null}.
      */
-    public WrapperFilter(Wrapper<W> wrapper,Iterable<Step> program){
+    public WrapperFilter(Wrapper<W> wrapper,Supplier<Step> stepSupplier){
         this.wrapper=Objects.requireNonNull(wrapper,"wrapper is null");
-        this.program=new Program(Objects.requireNonNull(program,"program is null"));
+        this.stepSupplier=Objects.requireNonNull(stepSupplier,"stepSupplier is null");
     }
     
     /**
@@ -30,6 +31,6 @@ public class WrapperFilter<W> implements SQLFilter<W> {
      */
     @Override
     public W apply(W input){
-        return wrapper.wrap(input,program);
+        return wrapper.wrap(input,stepSupplier);
     }
 }

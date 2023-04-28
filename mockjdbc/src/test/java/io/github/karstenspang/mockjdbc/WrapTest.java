@@ -43,7 +43,7 @@ public class WrapTest {
     public void testToString()
     {
         Wrap wrap=new Wrap(Integer.valueOf(1),new Program(Collections.emptyList()));
-        String expected=getClass().getPackage().getName()+".Wrap:{wrapped:1,program:[]}";
+        String expected=getClass().getPackage().getName()+".Wrap:{wrapped:1,stepSupplier:[]}";
         assertEquals(expected,wrap.toString());
     }
 }

@@ -33,7 +33,7 @@ public class WrapExceptionTest {
                 new ExceptionStep(ex)))));
         try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:")){
             Properties prop=new Properties();
-            IllegalStateException e=assertThrows(IllegalStateException.class,()->conn.setClientInfo(prop));
+            UnsupportedOperationException e=assertThrows(UnsupportedOperationException.class,()->conn.setClientInfo(prop));
             assertSame(ex,e.getCause());
         }
     }
