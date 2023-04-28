@@ -35,7 +35,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>1.3.0</version>
+  <version>1.5.0</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -317,3 +317,18 @@ public void testClose()
 In this example, we already have a connection, but it is wrapped before it is
 passed to the `UsesConnection` constructor. Note that the `Program` is created
 explicitly; normally the `WrapperStep` does that behind the scenes.
+
+### Trace all JDBC Method Calls
+
+If you need to know what call are made to JDBC, mockjdbc can help you
+there as well. You will have to insert this call into your code
+```
+MockDriver.setStepSupplier(RecursiveWrapperStepSupplier.instance());
+```
+and of course put the `mock` into your connection string.
+The result is that
+every JDBC method call will go through a wrap. The effect of this is
+that all calls will be logged with level `FINEST`, corresponding to
+`TRACE` in most logging backends. If you configure your backend to log
+`io.github.karstenspang.mockjdbc` at trace level, you will get a
+complete log of all JDBC calls, including arguments and returned results.

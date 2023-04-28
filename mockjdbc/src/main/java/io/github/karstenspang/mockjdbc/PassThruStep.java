@@ -48,5 +48,5 @@ public class PassThruStep implements Step {
         return "PassThruStep";
     }
     
-    private PassThruStep(){}
+    protected PassThruStep(){}
 }

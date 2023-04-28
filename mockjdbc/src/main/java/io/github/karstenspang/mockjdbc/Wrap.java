@@ -37,7 +37,7 @@ public class Wrap {
         this.wrapped=Objects.requireNonNull(wrapped,"wrapped is null");
         this.stepSupplier=Objects.requireNonNull(stepSupplier,"stepSupplier is null");
         Logger logger=Logger.getLogger(clazz.getName());
-        logger.fine("Wrapping "+String.valueOf(wrapped)+" in "+clazz.getName()+ "with step supplier "+String.valueOf(stepSupplier));
+        logger.fine("Wrapping "+String.valueOf(wrapped)+" in "+clazz.getName()+ " with step supplier "+String.valueOf(stepSupplier));
     }
     
     /**

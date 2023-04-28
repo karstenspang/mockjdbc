@@ -10,7 +10,7 @@
  * to fail on the second attempt. The returned statements are
  * again wraps around {@link java.sql.Statement} controlled by a program, etc.
  * <h3>Programs, Steps, and Wraps</h3>
- * A program is a {@link java.uyil.function.Supplier} of steps.
+ * A program is a {@link java.util.function.Supplier} of steps.
  * The {@link Program} class 
  * is based on a predefined list of steps to be run in the specified order
  * when a step is needed. Programs can be put on the
