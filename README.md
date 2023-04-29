@@ -6,16 +6,22 @@
 
 # mockjdbc
 A mock JDBC driver delegating to a real JDBC driver, with the
-possibility of simulating errors for testing purposes.
+possibility of simulating errors or modifying return values
+for testing purposes. It can also be used for tracing JDBC
+calls.
 
-The driver is a wrapper around a real JDBC Driver, simulating SQL errors.
-The driver is controlled by a program, for example
-"return a connection the first two times, fail on the third".
+The driver wraps around a real JDBC Driver.
+It is controlled by a program, for example
+"return a connection the first two times, fail the third,
+and turn autocommit on the fourth". For unit testing, the
+real driver could be
+[the H2 in-memory database](https://www.h2database.com/).
 
 The returned connections themselves can be wrappers controlled by
 a program, that can cause e.g. `Connection.createStatement()`
 to fail on the second attempt. The returned statements again
 can be wrappers around `Statement` controlled by a program, etc.
+
 Wrappers exist for all interfaces in `java.sql` for which this is
 meaningful, i.e. except `Driver`, `DriverNotification`, and
 `Wrapper`.
@@ -240,7 +246,7 @@ taking a wrapped object and a program as arguments, thus matching the
 [SLF4J Test](http://projects.lidalia.org.uk/slf4j-test/) is used to check
 the log, and thus that the execution took the expected path.
 
-### Complex exeption handling in `close`
+### Complex exception handling in `close`
 
 Here is a class implementing `AutoCloseable` with an exhaustive exception
 handling in `close()`. The class borrows the connection from the calling

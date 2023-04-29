@@ -13,7 +13,11 @@
     <module>wrapgen</module>
   </modules>
   <name>Mock JDBC Driver Parent</name>
-  <description>A JDBC driver that wraps around a real JDBC driver, allowing the injection of errors for testing purposes.</description>
+  <description>
+    A mock JDBC driver delegating to a real JDBC driver, with the
+    possibility of simulating errors or modifying return values for
+    testing purposes. It can also be used for tracing JDBC calls.
+  </description>
   <url>https://github.com/karstenspang/mockjdbc</url>
   <licenses>
     <license>
