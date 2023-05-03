@@ -181,6 +181,21 @@
               </arguments>
             </configuration>
           </execution>
+          <execution>
+            <id>repair-dejavu-font</id>
+            <phase>site</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>cp</executable>
+              <arguments>
+                <argument>-r</argument>
+                <argument>src/site/apidocs/resources</argument>
+                <argument>target/site/apidocs</argument>
+              </arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>
@@ -302,8 +317,12 @@
                 </configuration>
               </execution>
               <execution>
+                <id>repair-dejavu-font</id>
+                <phase>none</phase>
+              </execution>
+              <execution>
                 <id>remove apidocs/index.md</id>
-                <phase>post-site</phase>
+                <phase>site</phase>
                 <goals>
                   <goal>exec</goal>
                 </goals>
