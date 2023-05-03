@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * The basic step in a mock {@link Program}.
+ * The basic step in a mock program.
  */
 public interface Step {
     /**

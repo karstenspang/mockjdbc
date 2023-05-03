@@ -1,6 +1,7 @@
 package io.github.karstenspang.mockjdbc;
 
 import java.sql.SQLException;
+import java.util.Objects;
 
 /**
  * {@link Step} used when the program needs to throw an exception.
@@ -16,7 +17,7 @@ public class ExceptionStep implements Step {
      */
     public ExceptionStep(SQLException exception)
     {
-        this.exception=exception;
+        this.exception=Objects.requireNonNull(exception,"exception is null");
         this.runtimeException=null;
     }
     
@@ -27,7 +28,7 @@ public class ExceptionStep implements Step {
     public ExceptionStep(RuntimeException exception)
     {
         this.exception=null;
-        this.runtimeException=exception;
+        this.runtimeException=Objects.requireNonNull(exception,"exception is null");
     }
     
     /**
