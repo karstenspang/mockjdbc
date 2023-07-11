@@ -23,21 +23,31 @@ public class Wrap {
      * @throws NullPointerException if {@code wrapped} or {@code stepSupplier} is {@code null}.
      */
     public Wrap(Object wrapped,Supplier<Step> stepSupplier){
-        this(Wrap.class,wrapped,stepSupplier);
+        this(Wrap.class.getName(),wrapped,stepSupplier);
     }
     
     /**
      * Wrap an object
-     * @param clazz Class of the wrap, for logging purposes.
+     * @param wrapped Object to wrap
+     * @param steps Steps to wrap the object with.
+     * @throws NullPointerException if {@code wrapped} or {@code steps} is {@code null}.
+     */
+    public Wrap(Object wrapped,Iterable<Step> steps){
+        this(wrapped,new Program(steps));
+    }
+    
+    /**
+     * Wrap an object
+     * @param className Class of the wrap, for logging purposes.
      * @param wrapped Object to wrap
      * @param stepSupplier Supplier of steps to wrap the object with.
      * @throws NullPointerException if {@code wrapped} or {@code stepSupplier} is {@code null}.
      */
-    protected Wrap(Class<? extends Wrap> clazz,Object wrapped,Supplier<Step> stepSupplier){
+    protected Wrap(String className,Object wrapped,Supplier<Step> stepSupplier){
         this.wrapped=Objects.requireNonNull(wrapped,"wrapped is null");
         this.stepSupplier=Objects.requireNonNull(stepSupplier,"stepSupplier is null");
-        Logger logger=Logger.getLogger(clazz.getName());
-        logger.fine("Wrapping "+String.valueOf(wrapped)+" in "+clazz.getName()+ " with step supplier "+String.valueOf(stepSupplier));
+        Logger logger=Logger.getLogger(className);
+        logger.fine("Wrapping "+String.valueOf(wrapped)+" in "+className+ " with step supplier "+String.valueOf(stepSupplier));
     }
     
     /**

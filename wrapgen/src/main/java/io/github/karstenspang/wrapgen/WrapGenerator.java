@@ -41,7 +41,7 @@ public class WrapGenerator {
             java.sql.SQLType.class,java.sql.SQLXML.class,java.sql.Statement.class,
             java.sql.Struct.class)));
     }
-    private static Set<MethodDesc> objectMethods=getObjectMethods();
+    private static final Set<MethodDesc> objectMethods=getObjectMethods();
     private static final String packageName="io.github.karstenspang.mockjdbc";
     
     /**
@@ -94,28 +94,38 @@ public class WrapGenerator {
             writer.write("import java.util.logging.Logger;\n");
             writer.write("\n");
             writer.write("/**\n");
-            writer.write(" * Auto-generated wrap of {@link "+ifClass.getSimpleName()+"} with a {@link Program}.\n");
-            writer.write(" * Every method call will have a step from the program applied, in order.\n");
+            writer.write(" * Auto-generated wrap of {@link "+ifClass.getSimpleName()+"} with a {@link Supplier}&lt;{@link Step}&gt; (the program).\n");
+            writer.write(" * Every method call will have a step from the program applied, in the order they are returned.\n");
             writer.write(" */\n");
             writer.write("public class "+ifClass.getSimpleName()+"Wrap extends "+(notSpecialInterfaces.isEmpty()?"":notSpecialInterfaces.toArray(new Class<?>[1])[0].getSimpleName())+"Wrap implements "+ifClass.getSimpleName()+" {\n");
-            writer.write("    private static Logger logger=Logger.getLogger(\""+packageName+"."+ifClass.getSimpleName()+"Wrap\");\n");
+            writer.write("    private static final String className=\""+packageName+"."+ifClass.getSimpleName()+"Wrap\";\n");
+            writer.write("    private static final Logger logger=Logger.getLogger(className);\n");
             writer.write("    /**\n");
             writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
             writer.write("     * Note that this constructor can be used as a target for {@link Wrapper}<code>&lt;</code>{@link "+ifClass.getSimpleName()+"}<code>&gt;</code>.\n");
             writer.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
             writer.write("     * @param stepSupplier {@link Supplier}&lt;{@link Step}&lt; to wrap the object with\n");
             writer.write("     */\n");
-            writer.write("     public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
-            writer.write("         this("+ifClass.getSimpleName()+"Wrap.class,wrapped,stepSupplier);\n");
-            writer.write("     }\n");
-            writer.write("     protected "+ifClass.getSimpleName()+"Wrap(Class<? extends "+ifClass.getSimpleName()+"Wrap> clazz,"+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
-            writer.write("         super(clazz,wrapped,stepSupplier);\n");
-            writer.write("     }\n");
+            writer.write("    public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
+            writer.write("        this(className,wrapped,stepSupplier);\n");
+            writer.write("    }\n");
+            writer.write("    /**\n");
+            writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
+            writer.write("     * Convenience constructor that uses a {@link Program} to provide the steps.\n");
+            writer.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
+            writer.write("     * @param steps {@link Step}s to wrap the object with\n");
+            writer.write("     */\n");
+            writer.write("    public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Iterable<Step> steps){\n");
+            writer.write("        this(wrapped,new Program(steps));\n");
+            writer.write("    }\n");
+            writer.write("    protected "+ifClass.getSimpleName()+"Wrap(String className,"+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
+            writer.write("        super(className,wrapped,stepSupplier);\n");
+            writer.write("    }\n");
             writer.write("\n");
-            writer.write("     @SuppressWarnings(\"unchecked\")\n");
-            writer.write("     private final "+ifClass.getSimpleName()+" getWrapped"+ifClass.getSimpleName()+"(){\n");
-            writer.write("         return ("+ifClass.getSimpleName()+")wrapped;\n");
-            writer.write("     }\n");
+            writer.write("    @SuppressWarnings(\"unchecked\")\n");
+            writer.write("    private final "+ifClass.getSimpleName()+" getWrapped"+ifClass.getSimpleName()+"(){\n");
+            writer.write("        return ("+ifClass.getSimpleName()+")wrapped;\n");
+            writer.write("    }\n");
             writer.write("\n");
             if (extendedSpecialInterfaces.contains(Wrapper.class)){
                 writer.write("    @Override\n");
@@ -124,7 +134,9 @@ public class WrapGenerator {
                 writer.write("    {\n");
                 writer.write("        Step step=stepSupplier.get();\n");
                 writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".isWrapperFor​(\"+String.valueOf(iface)+\")\");\n");
-                writer.write("        return step.apply(()->getWrapped"+ifClass.getSimpleName()+"().isWrapperFor​(iface));\n");
+                writer.write("        boolean result=step.apply(()->getWrapped"+ifClass.getSimpleName()+"().isWrapperFor​(iface));\n");
+                writer.write("        logger.finest(\"Result: \"+String.valueOf(result));\n");
+                writer.write("        return result;\n");
                 writer.write("    }\n");
                 writer.write("    @Override\n");
                 writer.write("    public <T> T unwrap​(Class<T> iface)\n");
@@ -132,7 +144,9 @@ public class WrapGenerator {
                 writer.write("    {\n");
                 writer.write("        Step step=stepSupplier.get();\n");
                 writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".unWrap(\"+String.valueOf(iface)+\")\");\n");
-                writer.write("        return stepSupplier.get().apply(()->getWrapped"+ifClass.getSimpleName()+"().unwrap(iface));\n");
+                writer.write("        T result=stepSupplier.get().apply(()->getWrapped"+ifClass.getSimpleName()+"().unwrap(iface));\n");
+                writer.write("        logger.finest(\"Result: \"+String.valueOf(result));\n");
+                writer.write("        return result;\n");
                 writer.write("    }\n");
             }
             for (Method method:ifClass.getDeclaredMethods()){

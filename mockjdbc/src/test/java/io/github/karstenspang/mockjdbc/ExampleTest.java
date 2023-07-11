@@ -89,14 +89,14 @@ public class ExampleTest {
         try(Connection conn=DriverManager.getConnection("jdbc:h2:mem:","user","pwd")){
             final SQLException ex1=new SQLException("1");
             final SQLException ex2=new SQLException("2");
-            final Connection wrappedConnection=new ConnectionWrap(conn,new Program(Arrays.asList(
+            final Connection wrappedConnection=new ConnectionWrap(conn,Arrays.asList(
                 new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
                     new ExceptionStep(ex1)
                 )),
                 new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
                     new ExceptionStep(ex2)
                 ))
-            )));
+            ));
             Example.UsesConnection usesConnection=new Example.UsesConnection(wrappedConnection);
             SQLException ex=assertThrows(SQLException.class,()->usesConnection.close());
             assertSame(ex1,ex,"1");

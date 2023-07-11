@@ -4,7 +4,7 @@ import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
 import java.util.function.Supplier;
 
 /**
- * A functional that puts a wrap on something.
+ * A functional that puts a {@link Wrap} on something.
  * Method references to the constructors of the auto-generated
  * wraps in {@link io.github.karstenspang.mockjdbc.wrap},
  * e.g. {@link ConnectionWrap}{@code ::new}, all

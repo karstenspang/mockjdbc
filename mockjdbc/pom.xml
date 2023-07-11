@@ -16,6 +16,10 @@
   <scm>
     <url>https://github.com/karstenspang/mockjdbc</url>
   </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/karstenspang/mockjdbc/issues</url>
+  </issueManagement>
   <properties>
     <wrap.source.dir>${project.build.directory}/generated-sources/java</wrap.source.dir>
   </properties>
