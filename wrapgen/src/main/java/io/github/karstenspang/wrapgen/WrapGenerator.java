@@ -46,7 +46,6 @@ public class WrapGenerator {
     
     /**
      * Generate wraps for the interfaces in java.sql, as per JDBC 4.2 (Java 8).
-     * @param packageName Name of the package of the generated classes. This also determines the subdirectory to place the output.
      * @param baseDir Where to place the output, such as {@code target/generated-classes/java}.
      * @throws IOException if the output cannot be written.
      * @throws ClassNotFoundException if a specified interface does not exist.
@@ -122,11 +121,14 @@ public class WrapGenerator {
             writer.write("        super(className,wrapped,stepSupplier);\n");
             writer.write("    }\n");
             writer.write("\n");
-            writer.write("    @SuppressWarnings(\"unchecked\")\n");
-            writer.write("    private final "+ifClass.getSimpleName()+" getWrapped"+ifClass.getSimpleName()+"(){\n");
-            writer.write("        return ("+ifClass.getSimpleName()+")wrapped;\n");
-            writer.write("    }\n");
-            writer.write("\n");
+            Method[] methods=ifClass.getDeclaredMethods();
+            if (methods.length>0||extendedSpecialInterfaces.contains(Wrapper.class)){
+                writer.write("    @SuppressWarnings(\"unchecked\")\n");
+                writer.write("    private final "+ifClass.getSimpleName()+" getWrapped"+ifClass.getSimpleName()+"(){\n");
+                writer.write("        return ("+ifClass.getSimpleName()+")wrapped;\n");
+                writer.write("    }\n");
+                writer.write("\n");
+            }
             if (extendedSpecialInterfaces.contains(Wrapper.class)){
                 writer.write("    @Override\n");
                 writer.write("    public boolean isWrapperFor​(Class<?> iface)\n");
@@ -149,7 +151,7 @@ public class WrapGenerator {
                 writer.write("        return result;\n");
                 writer.write("    }\n");
             }
-            for (Method method:ifClass.getDeclaredMethods()){
+            for (Method method:methods){
                 int modifiers=method.getModifiers();
                 if (Modifier.isStatic(modifiers)) continue;
                 if (!Modifier.isPublic(modifiers)) continue;

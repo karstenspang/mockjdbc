@@ -16,10 +16,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import uk.org.lidalia.slf4jtest.LoggingEvent;
-import uk.org.lidalia.slf4jtest.TestLogger;
-import uk.org.lidalia.slf4jtest.TestLoggerFactory;
+import org.junit.jupiter.api.extension.ExtendWith;
+import com.github.valfirst.slf4jtest.JulConfigExtension;
+import com.github.valfirst.slf4jtest.LoggingEvent;
+import com.github.valfirst.slf4jtest.TestLogger;
+import com.github.valfirst.slf4jtest.TestLoggerFactory;
 
+@ExtendWith(JulConfigExtension.class)
 public class RecursiveWrapperStepSupplierTest {
     
     // For some reason, the H2 driver is not loaded automatically by DriverManager
@@ -28,7 +31,6 @@ public class RecursiveWrapperStepSupplierTest {
         throws ClassNotFoundException
     {
         Class.forName("org.h2.Driver");
-        TestLogging.setup();
     }
     
     @Test

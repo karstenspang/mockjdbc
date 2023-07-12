@@ -25,7 +25,6 @@ public class WrapperStepTest {
     {
         // Make sure the H2 driver is loaded.
         Class.forName("org.h2.Driver");
-        TestLogging.setup();
     }
     
     @Test
