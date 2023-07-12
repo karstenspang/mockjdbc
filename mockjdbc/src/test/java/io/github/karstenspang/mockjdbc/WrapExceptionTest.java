@@ -19,7 +19,6 @@ public class WrapExceptionTest {
         throws ClassNotFoundException
     {
         Class.forName("org.h2.Driver");
-        TestLogging.setup();
     }
     
     @Test

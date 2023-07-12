@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * {@link Step} used when the {@link Program} is to call a
+ * {@link Step} used when the program is to call a
  * method in the real driver.
  */
 public class PassThruStep implements Step {

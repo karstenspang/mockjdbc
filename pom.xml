@@ -13,38 +13,13 @@
     <module>wrapgen</module>
   </modules>
   <name>Mock JDBC Driver Parent</name>
-  <description>
-    A mock JDBC driver delegating to a real JDBC driver, with the
-    possibility of simulating errors or modifying return values for
-    testing purposes. It can also be used for tracing JDBC calls.
-  </description>
-  <url>https://github.com/karstenspang/mockjdbc</url>
-  <licenses>
-    <license>
-      <name>Apache License, Version 2.0</name>
-      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-    </license>
-  </licenses>
-  <scm>
-    <connection>scm:git:https://github.com/karstenspang/mockjdbc.git</connection>
-    <developerConnection>scm:git:https://github.com/karstenspang/mockjdbc.git</developerConnection>
-    <url>https://github.com/karstenspang/mockjdbc</url>
-  </scm>
-  <developers>
-    <developer>
-      <name>Karsten Spang</name>
-      <id>karstenspang</id>
-      <organization>GitHub</organization>
-      <organizationUrl>https://github.com/karstenspang</organizationUrl>
-    </developer>
-  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <revision>0.0.0</revision>
-    <surefire.version>3.0.0</surefire.version>
+    <surefire.version>3.1.2</surefire.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -56,12 +31,12 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jul-to-slf4j</artifactId>
-        <version>1.7.36</version>
+        <version>2.0.7</version>
       </dependency>
       <dependency>
-        <groupId>uk.org.lidalia</groupId>
+        <groupId>com.github.valfirst</groupId>
         <artifactId>slf4j-test</artifactId>
-        <version>1.2.0</version>
+        <version>3.0.0</version>
       </dependency>
       <dependency>
         <groupId>com.h2database</groupId>
@@ -103,7 +78,7 @@
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.1</version>
         </plugin>
         <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
         <plugin>
@@ -178,12 +153,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.6.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>3.6.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -193,7 +168,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.0.1</version>
         </plugin>
         <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
         <plugin>
@@ -211,7 +186,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>3.4.3</version>
+          <version>3.4.5</version>
           <configuration>
             <licenseMappings>
               <licenseMapping>
@@ -242,7 +217,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>versions-maven-plugin</artifactId>
-          <version>2.15.0</version>
+          <version>2.16.0</version>
         </plugin>
         <plugin>
           <groupId>org.jacoco</groupId>
@@ -252,7 +227,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.4.1</version>
+          <version>1.5.0</version>
           <configuration>
             <flattenMode>ossrh</flattenMode>
           </configuration>
@@ -260,13 +235,13 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>3.2.1</version>
+          <version>3.3.0</version>
         </plugin>
         <!-- The key's name & passphrase are configured via GitHub's setup-java action. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
-          <version>3.0.1</version>
+          <version>3.1.0</version>
           <executions>
             <execution>
               <id>sign-artifacts</id>
@@ -304,14 +279,14 @@
             <dependency>
               <groupId>org.codehaus.groovy</groupId>
               <artifactId>groovy</artifactId>
-              <version>3.0.17</version>
+              <version>3.0.18</version>
             </dependency>
           </dependencies>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.4.0</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>

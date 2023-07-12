@@ -13,9 +13,33 @@
   <artifactId>mockjdbc</artifactId>
   <name>Mock JDBC Driver</name>
   <url>https://github.com/karstenspang/mockjdbc</url>
+  <description>
+    A mock JDBC driver delegating to a real JDBC driver, with the
+    possibility of simulating errors or modifying return values for
+    testing purposes. It can also be used for tracing JDBC calls.
+  </description>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
   <scm>
+    <connection>scm:git:https://github.com/karstenspang/mockjdbc.git</connection>
+    <developerConnection>scm:git:https://github.com/karstenspang/mockjdbc.git</developerConnection>
     <url>https://github.com/karstenspang/mockjdbc</url>
   </scm>
+  <developers>
+    <developer>
+      <name>Karsten Spang</name>
+      <id>karstenspang</id>
+      <organization>GitHub</organization>
+      <organizationUrl>https://github.com/karstenspang</organizationUrl>
+      <properties>
+        <picUrl>images/karsten.jpg</picUrl>
+      </properties>
+    </developer>
+  </developers>
   <issueManagement>
     <system>GitHub</system>
     <url>https://github.com/karstenspang/mockjdbc/issues</url>
@@ -35,7 +59,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>uk.org.lidalia</groupId>
+      <groupId>com.github.valfirst</groupId>
       <artifactId>slf4j-test</artifactId>
       <scope>test</scope>
     </dependency>
@@ -250,7 +274,6 @@
             <reports>
               <report>dependency-updates-report</report>
               <report>plugin-updates-report</report>
-              <report>property-updates-report</report>
             </reports>
           </reportSet>
         </reportSets>
