@@ -6,8 +6,8 @@ import java.util.function.Supplier;
 
 /**
  * A program is an {@link Supplier} returning {@link Step}s
- * in order from a defined list.
- * If the defined list is exhausted, {@link PassThruStep}s
+ * in order from a list passed to the constructor.
+ * If the list is exhausted, {@link PassThruStep}s
  * are returned by {@link #get}.
  */
 public class Program implements Supplier&lt;Step&gt; {

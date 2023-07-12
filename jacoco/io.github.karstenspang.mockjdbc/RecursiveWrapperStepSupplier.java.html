@@ -39,15 +39,15 @@ public class RecursiveWrapperStepSupplier implements Supplier&lt;Step&gt; {
     @Override
 <span class="fc" id="L40">    public String toString(){return &quot;RecursiveWrapperStepSupplier&quot;;}</span>
     
-    // Important that CallableStatement, PreparedStatement, and Statement come in that order
+    // Important that CallableStatement, PreparedStatement, and Statement come in that order. The same applies to NClob and Clob.
 <span class="fc" id="L43">    private static final ClassWrapper&lt;?&gt;[] classWrappers={</span>
         new ClassWrapper&lt;java.sql.Array            &gt;(java.sql.Array.class            ,io.github.karstenspang.mockjdbc.wrap.ArrayWrap::new            ),
         new ClassWrapper&lt;java.sql.Blob             &gt;(java.sql.Blob.class             ,io.github.karstenspang.mockjdbc.wrap.BlobWrap::new             ),
         new ClassWrapper&lt;java.sql.CallableStatement&gt;(java.sql.CallableStatement.class,io.github.karstenspang.mockjdbc.wrap.CallableStatementWrap::new),
-        new ClassWrapper&lt;java.sql.Clob             &gt;(java.sql.Clob.class             ,io.github.karstenspang.mockjdbc.wrap.ClobWrap::new             ),
         new ClassWrapper&lt;java.sql.Connection       &gt;(java.sql.Connection.class       ,io.github.karstenspang.mockjdbc.wrap.ConnectionWrap::new       ),
         new ClassWrapper&lt;java.sql.DatabaseMetaData &gt;(java.sql.DatabaseMetaData.class ,io.github.karstenspang.mockjdbc.wrap.DatabaseMetaDataWrap::new ),
         new ClassWrapper&lt;java.sql.NClob            &gt;(java.sql.NClob.class            ,io.github.karstenspang.mockjdbc.wrap.NClobWrap::new            ),
+        new ClassWrapper&lt;java.sql.Clob             &gt;(java.sql.Clob.class             ,io.github.karstenspang.mockjdbc.wrap.ClobWrap::new             ),
         new ClassWrapper&lt;java.sql.ParameterMetaData&gt;(java.sql.ParameterMetaData.class,io.github.karstenspang.mockjdbc.wrap.ParameterMetaDataWrap::new),
         new ClassWrapper&lt;java.sql.PreparedStatement&gt;(java.sql.PreparedStatement.class,io.github.karstenspang.mockjdbc.wrap.PreparedStatementWrap::new),
         new ClassWrapper&lt;java.sql.Ref              &gt;(java.sql.Ref.class              ,io.github.karstenspang.mockjdbc.wrap.RefWrap::new              ),
