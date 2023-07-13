@@ -10,17 +10,21 @@
  *public Statement createStatement()
  *    throws SQLException
  *{
- *    return steps.next().apply(()-&gt;wrapped.createStatement());
+ *    return stepSupplier.get().apply(()-&gt;wrapped.createStatement());
  *}
  *</pre>
- * In other words, <b>every</b> method call to a wrap causes the program
- * to be advanced to the next step and applying it. However, this does not
+ * In other words, <b>every</b> method call to a wrap causes a 
+ * {@link io.github.karstenspang.mockjdbc.Step} to be supplied and applied.
+ * However, this does not
  * apply to methods defined in {@link java.lang.Object}, such as {@link java.lang.Object#toString()}.<p>
  * The wraps have constructors that take an object to be wrapped and a
- * {@link io.github.karstenspang.mockjdbc.Program}, thus matching the signature of
+ * {@link java.util.function.Supplier}&lt;{@link io.github.karstenspang.mockjdbc.Step}&gt;,
+ * thus matching the signature of
  * {@link io.github.karstenspang.mockjdbc.Wrapper}, for example
  * {@link io.github.karstenspang.mockjdbc.wrap.ConnectionWrap#ConnectionWrap(java.sql.Connection,java.util.function.Supplier)}
  * matches {@link io.github.karstenspang.mockjdbc.Wrapper}&lt;{@link java.sql.Connection}&gt;.
+ * For convenience, they also have constructors where the second argument
+ * is an {@link Iterable}&lt;{@link io.github.karstenspang.mockjdbc.Step}&gt;.
  * <h3>Exceptions</h3>
  * The vast majority of the methods of the interfaces in {@link java.sql}
  * are declared to throw {@link java.sql.SQLException}, and consequently, the

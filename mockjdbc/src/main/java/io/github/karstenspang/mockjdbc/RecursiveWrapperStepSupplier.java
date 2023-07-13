@@ -1,8 +1,11 @@
 package io.github.karstenspang.mockjdbc;
 
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * Supplier of steps that wraps every result with this supplier.
@@ -102,4 +105,9 @@ public class RecursiveWrapperStepSupplier implements Supplier<Step> {
     }
     
     private RecursiveWrapperStepSupplier(){}
+    
+    // For test purposes
+    static List<Class<?>> wrappedInterfaces(){
+        return Arrays.stream(classWrappers).map(w->w.clazz).collect(Collectors.toList());
+    }
 }

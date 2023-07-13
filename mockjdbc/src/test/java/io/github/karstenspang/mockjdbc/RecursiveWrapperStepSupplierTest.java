@@ -8,10 +8,13 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Wrapper;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -66,5 +69,29 @@ public class RecursiveWrapperStepSupplierTest {
         //assertEquals(
         //    Arrays.asList(...),
         //    events);
+    }
+    
+    @Test
+    @DisplayName("Extended interfaces come before the interface they extend in the search list")
+    void testSequence()
+    {
+        final Set<Class<?>> specialInterfaces=new HashSet<>(Arrays.asList(Wrapper.class,AutoCloseable.class));
+        List<Class<?>> interfaces=RecursiveWrapperStepSupplier.wrappedInterfaces();
+        for (int i=0;i<interfaces.size();i++){
+            Class<?> ifClass=interfaces.get(i);
+            Set<Class<?>> extendedInterfaces=new HashSet<>(Arrays.asList(ifClass.getInterfaces()));
+            extendedInterfaces.removeAll(specialInterfaces);
+            if (extendedInterfaces.isEmpty()) continue;
+            assertEquals(1,extendedInterfaces.size(),"parents of "+ifClass.getSimpleName());
+            Class<?> parent=extendedInterfaces.toArray(new Class<?>[1])[0];
+            boolean found=false;
+            for (int j=i+1;j<interfaces.size();j++){
+                if (parent==interfaces.get(j)){
+                    found=true;
+                    break;
+                }
+            }
+            assertTrue(found,ifClass.getSimpleName()+" before "+parent.getSimpleName());
+        }
     }
 }

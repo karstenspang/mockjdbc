@@ -36,7 +36,7 @@
       <organization>GitHub</organization>
       <organizationUrl>https://github.com/karstenspang</organizationUrl>
       <properties>
-        <picUrl>images/karsten.jpg</picUrl>
+        <picUrl>https://karstenspang.github.io/mockjdbc/images/karsten.jpg</picUrl>
       </properties>
     </developer>
   </developers>
