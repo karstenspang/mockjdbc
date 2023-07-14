@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
- * A program is an {@link Supplier} returning {@link Step}s
+ * A {@link Supplier} returning {@link Step}s
  * in order from a list passed to the constructor.
  * If the list is exhausted, {@link PassThruStep}s
  * are returned by {@link #get}.

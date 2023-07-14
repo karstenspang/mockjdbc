@@ -11,6 +11,6 @@ Mock JDBC Driver,io.github.karstenspang.mockjdbc,WrapperStep,0,30,0,0,0,6,0,3,0,
 Mock JDBC Driver,io.github.karstenspang.mockjdbc,SQLFilter,0,30,0,0,0,5,0,6,0,6
 Mock JDBC Driver,io.github.karstenspang.mockjdbc,ExceptionStep,0,60,0,6,0,13,0,8,0,5
 Mock JDBC Driver,io.github.karstenspang.mockjdbc,RecursiveWrapperStepSupplier.RecursiveWrapperStep,0,31,0,4,0,6,0,4,0,2
-Mock JDBC Driver,io.github.karstenspang.mockjdbc,RecursiveWrapperStepSupplier,0,187,0,0,0,6,0,4,0,4
+Mock JDBC Driver,io.github.karstenspang.mockjdbc,RecursiveWrapperStepSupplier,0,198,0,0,0,7,0,6,0,6
 Mock JDBC Driver,io.github.karstenspang.mockjdbc,ConstantStep,0,21,0,0,0,6,0,4,0,4
 Mock JDBC Driver,io.github.karstenspang.mockjdbc,PassThruStep,0,18,0,0,0,7,0,6,0,6

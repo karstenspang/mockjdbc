@@ -33,7 +33,7 @@ public class PassThruStep implements Step {
     }
     
     /**
-     * Performs the specified action
+     * Perform the specified action
      * @param action Action to perform
      * @throws SQLException if {@code action} does.
      */

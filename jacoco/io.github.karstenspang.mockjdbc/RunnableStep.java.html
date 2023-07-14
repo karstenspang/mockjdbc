@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 /**
- * {@link Step} that runs a different {@link SQLRunnable} than the one in the wrap.
+ * {@link Step} that runs a different {@link SQLRunnable} than the one passed by the wrap.
  */
 public class RunnableStep implements Step {
     private SQLRunnable runnable;
