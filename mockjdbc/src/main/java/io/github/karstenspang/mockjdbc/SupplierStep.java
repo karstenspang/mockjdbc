@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 /**
- * Step that returns a value from a stored {@link SQLSupplier}, rather than the one in the wrap.
+ * {@link Step} that returns a value from a stored {@link SQLSupplier}, rather than the passed by the wrap.
  */
 public class SupplierStep implements Step {
     private SQLSupplier<?> supplier;

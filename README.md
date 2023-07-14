@@ -41,7 +41,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>1.5.2</version>
+  <version>1.5.3</version>
   <scope>test</scope>
 </dependency>
 ```

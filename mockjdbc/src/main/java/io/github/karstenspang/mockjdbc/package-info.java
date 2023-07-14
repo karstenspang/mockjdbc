@@ -11,42 +11,42 @@
  * again wraps around {@link java.sql.Statement} controlled by a program, etc.
  * <h3>Programs, Steps, and Wraps</h3>
  * A program is a {@link java.util.function.Supplier} of steps.
- * The {@link Program} class 
+ * The {@link io.github.karstenspang.mockjdbc.Program} class 
  * is based on a predefined list of steps to be run in the specified order
  * when a step is needed. Programs can be put on the
  * {@link io.github.karstenspang.mockjdbc.MockDriver},
  * or on wraps. A step is an implementation of the interface
  * {@link io.github.karstenspang.mockjdbc.Step}.
- * The following implementations are defined:
+ * The following pre-defined implementations exist:
  * <ul>
- *  <li><code>PassThruStep</code> passes the method call on to the
+ *  <li>{@link io.github.karstenspang.mockjdbc.PassThruStep} passes the method call on to the
  *      wrapped driver and returns the result.</li>
- *  <li><code>Exceptionstep</code> throws an exception. The constructor
+ *  <li>{@link io.github.karstenspang.mockjdbc.ExceptionStep} throws an exception. The constructor
  *      takes the exception to throw as an argument. It must
- *      be an instance of <code>SQLException</code>
- *      or <code>RuntimeException</code>.</li>
- *  <li><code>WrapperStep</code> passes the method call on to the wrapped
+ *      be an instance of {@link java.sql.SQLException}
+ *      or {@link java.lang.RuntimeException}.</li>
+ *  <li>{@link io.github.karstenspang.mockjdbc.WrapperStep} passes the method call on to the wrapped
  *      driver, then wraps the result with a program, and returns the wrap.
- *      The constructors take a <code>Wrapper</code> and program as
+ *      The constructors take a {@link io.github.karstenspang.mockjdbc.Wrapper} and program as
  *      arguments.
  *      The wrapper is usually a function reference to the
- *      construtor of a wrap, e.g. <code>ConnectionWrap::new</code>.
+ *      construtor of a wrap, e.g. {@link io.github.karstenspang.mockjdbc.wrap.ConnectionWrap}{@code ::new}.
  *      Two constructor variations exist. In the first, the program
- *      is an <code>Iterable&lt;Step&gt;</code>.
- *      This is usually a <code>List</code>, since you need the steps to be in
+ *      is an {@link java.lang.Iterable}{@code <}{@link io.github.karstenspang.mockjdbc.Step}{@code >}.
+ *      This is usually a {@link java.util.List}, since you need the steps to be in
  *      a predictable sequence.
- *      In the other, the program is a <code>Supplier&lt;Step&gt;</code>,
+ *      In the other, the program is a {@link java.util.function.Supplier}{@code <}{@link io.github.karstenspang.mockjdbc.Step}{@code >},
  *      allowing you to write your own implementation doing something
  *      intelligent.</li>
- *  <li><code>ConstantStep</code> returns a constant value instead of
+ *  <li>{@link io.github.karstenspang.mockjdbc.ConstantStep} returns a constant value instead of
  *      executing the method.</li>
- *  <li><code>SupplierStep</code> returns the value of a function instead of
+ *  <li>{@link io.github.karstenspang.mockjdbc.SupplierStep} returns the value of a function instead of
  *      executing the method.</li>
- *  <li><code>RunnableStep</code> executes some action instead of
+ *  <li>{@link io.github.karstenspang.mockjdbc.RunnableStep} executes some action instead of
  *      executing the method.</li>
- *  <li><code>FilterStep</code> executes the method and performs some
- *      transformation of the result. <code>WrapperStep</code> is a
- *      specialized <code>FilterStep</code>.</li>
+ *  <li>{@link io.github.karstenspang.mockjdbc.FilterStep} executes the method and performs some
+ *      transformation of the result. {@link io.github.karstenspang.mockjdbc.WrapperStep} is a
+ *      specialized {@link io.github.karstenspang.mockjdbc.FilterStep}.</li>
  * </ul>
  * The {@link io.github.karstenspang.mockjdbc.MockDriver}
  * takes a step from the program whenever

@@ -1,9 +1,9 @@
 package io.github.karstenspang.mockjdbc;
 
 import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
-import java.sql.SQLClientInfoException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Properties;
@@ -22,7 +22,7 @@ public class WrapExceptionTest {
     }
     
     @Test
-    @DisplayName("Throwing SQLException in Connection.setClientInfo results in InvalidStateException")
+    @DisplayName("Throwing SQLException in Connection.setClientInfo results in UnsupportedOperationException")
     public void testConnectionSetClientInfoSQLException()
         throws SQLException
     {

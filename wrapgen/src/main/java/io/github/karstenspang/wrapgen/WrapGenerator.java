@@ -93,7 +93,7 @@ public class WrapGenerator {
             writer.write("import java.util.logging.Logger;\n");
             writer.write("\n");
             writer.write("/**\n");
-            writer.write(" * Auto-generated wrap of {@link "+ifClass.getSimpleName()+"} with a {@link Supplier}&lt;{@link Step}&gt; (the program).\n");
+            writer.write(" * Auto-generated wrap of {@link "+ifClass.getSimpleName()+"} with a {@link Supplier}{@code <}{@link Step}{@code >} (the program).\n");
             writer.write(" * Every method call will have a step from the program applied, in the order they are returned.\n");
             writer.write(" */\n");
             writer.write("public class "+ifClass.getSimpleName()+"Wrap extends "+(notSpecialInterfaces.isEmpty()?"":notSpecialInterfaces.toArray(new Class<?>[1])[0].getSimpleName())+"Wrap implements "+ifClass.getSimpleName()+" {\n");
@@ -101,9 +101,9 @@ public class WrapGenerator {
             writer.write("    private static final Logger logger=Logger.getLogger(className);\n");
             writer.write("    /**\n");
             writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
-            writer.write("     * Note that this constructor can be used as a target for {@link Wrapper}<code>&lt;</code>{@link "+ifClass.getSimpleName()+"}<code>&gt;</code>.\n");
+            writer.write("     * Note that this constructor can be used as a target for {@link Wrapper}{@code <}{@link "+ifClass.getSimpleName()+"}{@code >}.\n");
             writer.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
-            writer.write("     * @param stepSupplier {@link Supplier}&lt;{@link Step}&lt; to wrap the object with\n");
+            writer.write("     * @param stepSupplier {@link Supplier}{@code <}{@link Step}{@code >} to wrap the object with\n");
             writer.write("     */\n");
             writer.write("    public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
             writer.write("        this(className,wrapped,stepSupplier);\n");

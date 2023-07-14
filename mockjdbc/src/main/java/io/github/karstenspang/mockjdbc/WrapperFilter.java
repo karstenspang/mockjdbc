@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
- * A filter that wraps its input with a {@link Supplier}&lt;{@link Step}&gt; using a {@link Wrapper}.
+ * A filter that wraps its input with a {@link Supplier}{@code <}{@link Step}{@code >}; using a {@link Wrapper}.
  * @param <W> The wrapped type, e.g. {@link Connection}.
  * @see WrapperStep
  */

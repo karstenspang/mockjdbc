@@ -30,14 +30,14 @@
  * are declared to throw {@link java.sql.SQLException}, and consequently, the
  * methods in {@link io.github.karstenspang.mockjdbc.Step} are declared likewise. In case a method is not
  * declared to throw {@link java.sql.SQLException}, it is caught and an
- * {@link java.lang.IllegalStateException} is thrown with the original exception
+ * {@link java.lang.UnsupportedOperationException} is thrown with the original exception
  * as cause.
  * For example, {@link java.sql.Connection#setClientInfo(java.util.Properties)}
  * is declared to throw an {@link java.sql.SQLClientInfoException}. If the
  * {@link io.github.karstenspang.mockjdbc.ExceptionStep} throws an
  * {@link java.sql.SQLClientInfoException}, then that exception is delivered
  * as expected, but if any other {@link java.sql.SQLException} is thrown
- * then an {@link java.lang.IllegalStateException} is delivered.
+ * then an {@link java.lang.UnsupportedOperationException} is delivered.
  * <h3>Methods Defined in {@link java.lang.Object}</h3>
  * The methods defined in {@link java.lang.Object} are not implemented in the
  * generated wraps, even if defined in the interface. The methods
