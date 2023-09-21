@@ -56,10 +56,15 @@ public class RecursiveWrapperStepSupplierTest {
             Statement stmt=conn.createStatement();
             assertInstanceOf(StatementWrap.class,stmt,"Statement");
             ResultSet rs=stmt.executeQuery("select 1");
-            assertInstanceOf(ResultSetWrap.class,rs,"Statement");
+            assertInstanceOf(ResultSetWrap.class,rs,"ResultSet 1");
             rs.next();
             int i=rs.getInt(1);
             assertEquals(1,i);
+            rs=stmt.executeQuery("select null");
+            assertInstanceOf(ResultSetWrap.class,rs,"ResultSet 2");
+            rs.next();
+            String s=rs.getString(1);
+            assertNull(s);
         }
         List<LoggingEvent> events=new ArrayList<>();
         for (TestLogger logger:loggers){
