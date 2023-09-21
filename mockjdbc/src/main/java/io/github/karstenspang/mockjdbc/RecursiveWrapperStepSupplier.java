@@ -93,6 +93,7 @@ public class RecursiveWrapperStepSupplier implements Supplier<Step> {
             throws SQLException
         {
             T result=supplier.get();
+            if (result==null) return null;
             for (ClassWrapper<?> classWrapper:classWrappers){
                 @SuppressWarnings("unchecked")
                 T wrap=(T)classWrapper.wrapIfMatch(result);
