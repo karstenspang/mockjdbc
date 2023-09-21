@@ -5,6 +5,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -164,5 +165,99 @@ public class MockDriverTest {
         MockDriver.setProgram(null);
         t.start();
         t.joinAndCheck();
+    }
+    
+    @Test
+    @DisplayName("Password is hidden by default")
+    void testLogPasswordDefault()
+        throws Exception
+    {
+        TestLogger drvLogger=TestLoggerFactory.getTestLogger(MockDriver.class);
+        MockDriver driver=new MockDriver("test1.pom.properties");
+        Properties props=new Properties();
+        props.setProperty("password","secret");
+        drvLogger.clear();
+        driver.connect("jdbc:mock:h2:mem:",props);
+        List<LoggingEvent> events=drvLogger.getLoggingEvents();
+        List<String> messages=new ArrayList<>();
+        for (LoggingEvent event:events){
+            messages.add(event.getMessage());
+        }
+        
+        List<String> expected=Arrays.asList(
+            "connect(jdbc:mock:h2:mem:,{password=[HIDDEN]})",
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:h2:mem:,{password=[HIDDEN]})"
+        );
+        assertEquals(expected,messages);
+    }
+    
+    @Test
+    @DisplayName("Password is shown if requested")
+    void testLogPasswordOn()
+        throws Exception
+    {
+        TestLogger drvLogger=TestLoggerFactory.getTestLogger(MockDriver.class);
+        MockDriver driver=new MockDriver("test1.pom.properties");
+        driver.logPassword(true);
+        Properties props=new Properties();
+        props.setProperty("password","secret");
+        drvLogger.clear();
+        driver.connect("jdbc:mock:h2:mem:",props);
+        List<LoggingEvent> events=drvLogger.getLoggingEvents();
+        List<String> messages=new ArrayList<>();
+        for (LoggingEvent event:events){
+            messages.add(event.getMessage());
+        }
+        
+        List<String> expected=Arrays.asList(
+            "connect(jdbc:mock:h2:mem:,{password=secret})",
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:h2:mem:,{password=secret})"
+        );
+        assertEquals(expected,messages);
+    }
+    
+    @Test
+    @DisplayName("Password is not replaced if it is not there")
+    void testLogNoPassword()
+        throws Exception
+    {
+        TestLogger drvLogger=TestLoggerFactory.getTestLogger(MockDriver.class);
+        MockDriver driver=new MockDriver("test1.pom.properties");
+        Properties props=new Properties();
+        drvLogger.clear();
+        driver.connect("jdbc:mock:h2:mem:",props);
+        List<LoggingEvent> events=drvLogger.getLoggingEvents();
+        List<String> messages=new ArrayList<>();
+        for (LoggingEvent event:events){
+            messages.add(event.getMessage());
+        }
+        
+        List<String> expected=Arrays.asList(
+            "connect(jdbc:mock:h2:mem:,{})",
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:h2:mem:,{})"
+        );
+        assertEquals(expected,messages);
+    }
+    
+    @Test
+    @DisplayName("Password is not replaced if info is not supplied")
+    void testLogNoProps()
+        throws Exception
+    {
+        TestLogger drvLogger=TestLoggerFactory.getTestLogger(MockDriver.class);
+        MockDriver driver=new MockDriver("test1.pom.properties");
+        drvLogger.clear();
+        driver.connect("jdbc:mock:h2:mem:",null);
+        List<LoggingEvent> events=drvLogger.getLoggingEvents();
+        List<String> messages=new ArrayList<>();
+        for (LoggingEvent event:events){
+            messages.add(event.getMessage());
+        }
+        
+        List<String> expected=Arrays.asList(
+            "connect(jdbc:mock:h2:mem:,null)",
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:h2:mem:,null)"
+        );
+        assertEquals(expected,messages);
     }
 }

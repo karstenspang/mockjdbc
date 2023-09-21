@@ -49,6 +49,7 @@ public class MockDriver implements Driver {
     private InheritableThreadLocal<Supplier<Step>> stepSupplier;
     private final int majorVersion;
     private final int minorVersion;
+    private boolean logPassword;
     static{
         emptySteps=new Program(Collections.emptyList());
         instance=new MockDriver();
@@ -86,6 +87,15 @@ public class MockDriver implements Driver {
     }
     
     /**
+     * Specify whether logging should include the password.
+     * @param enable whether to enable password logging.
+     *        The default is {@code false}.
+     */
+    public void logPassword(boolean enable){
+        logPassword=enable;
+    }
+    
+    /**
      * Takes an URL of the form {@code jdbc:mock:restofurl}, and
      * converts it into {@code jdbc:restofurl}, passing that to
      * {@link DriverManager#getConnection(String,Properties)}.
@@ -106,11 +116,20 @@ public class MockDriver implements Driver {
             this.stepSupplier.set(emptySteps);
             stepSupplier=emptySteps;
         }
-        logger.finest("connect("+String.valueOf(url)+","+String.valueOf(info)+")");
+        Properties logProps;
+        if (!logPassword && info!=null && info.getProperty("password")!=null){
+            logProps=new Properties();
+            logProps.putAll(info);
+            logProps.setProperty("password","[HIDDEN]");
+        }
+        else{
+            logProps=info;
+        }
+        logger.finest("connect("+String.valueOf(url)+","+String.valueOf(logProps)+")");
         if (!isOurUrl(url)) return null;
         final String newUrl="jdbc:"+url.split(":",3)[2];
         Step step=stepSupplier.get();
-        logger.finest("Apply "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+","+String.valueOf(info)+")");
+        logger.finest("Apply "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+","+String.valueOf(logProps)+")");
         return step.apply(()->DriverManager.getConnection(newUrl,info));
     }
     @Override
@@ -148,6 +167,7 @@ public class MockDriver implements Driver {
         int[] versionParts=extractVersion(pomProperties.getProperty("version"));
         majorVersion=versionParts.length>=1?versionParts[0]:0;
         minorVersion=versionParts.length>=2?versionParts[1]:0;
+        logPassword=false;
     }
     
     private static boolean isOurUrl(String url){
