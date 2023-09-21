@@ -93,22 +93,23 @@ public class RecursiveWrapperStepSupplier implements Supplier&lt;Step&gt; {
             throws SQLException
         {
 <span class="fc" id="L95">            T result=supplier.get();</span>
-<span class="fc bfc" id="L96" title="All 2 branches covered.">            for (ClassWrapper&lt;?&gt; classWrapper:classWrappers){</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (result==null) return null;</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">            for (ClassWrapper&lt;?&gt; classWrapper:classWrappers){</span>
                 @SuppressWarnings(&quot;unchecked&quot;)
-<span class="fc" id="L98">                T wrap=(T)classWrapper.wrapIfMatch(result);</span>
-<span class="fc bfc" id="L99" title="All 2 branches covered.">                if (wrap!=null) return wrap;</span>
+<span class="fc" id="L99">                T wrap=(T)classWrapper.wrapIfMatch(result);</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">                if (wrap!=null) return wrap;</span>
             }
-<span class="fc" id="L101">            return result;</span>
+<span class="fc" id="L102">            return result;</span>
         }
         @Override
-<span class="fc" id="L104">        public String toString(){return &quot;RecursiveWrapperStep&quot;;}</span>
+<span class="fc" id="L105">        public String toString(){return &quot;RecursiveWrapperStep&quot;;}</span>
     }
     
     private RecursiveWrapperStepSupplier(){}
     
     // For test purposes
     static List&lt;Class&lt;?&gt;&gt; wrappedInterfaces(){
-<span class="fc" id="L111">        return Arrays.stream(classWrappers).map(w-&gt;w.clazz).collect(Collectors.toList());</span>
+<span class="fc" id="L112">        return Arrays.stream(classWrappers).map(w-&gt;w.clazz).collect(Collectors.toList());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
