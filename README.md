@@ -17,22 +17,22 @@ and turn autocommit on the fourth". For unit testing, the
 real driver could be
 [the H2 in-memory database](https://www.h2database.com/).
 
-The returned connections themselves can be wrappers controlled by
+The returned connections themselves can be wrapped with
 a program, that can cause e.g. `Connection.createStatement()`
 to fail on the second attempt. The returned statements again
-can be wrappers around `Statement` controlled by a program, etc.
+can be wrapped, etc.
 
-Wrappers exist for all interfaces in `java.sql` for which this is
+Wraps exist for all interfaces in `java.sql` for which this is
 meaningful, i.e. except `Driver`, `DriverNotification`, and
 `Wrapper`.
 
 ## Java and JDBC versions
 For maximum usefullness,
-it was decided to build this with Java 8, and thus the wrappers
+it was decided to build this with Java 8, and thus the wraps
 implement only what is in JDBC 4.2. If used with java 9 and
 higher, new methods introduced in 4.3 will have their default
-implementation in the wrappers, even if the wrapped driver has
-overridden the default implementation. Likewise, no wrappers exist
+implementation in the wraps, even if the wrapped driver has
+overridden the default implementation. Likewise, no wraps exist
 for new interfaces.
 
 ## Dependency information
@@ -41,7 +41,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>1.5.4</version>
+  <version>1.5.5</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -234,8 +234,9 @@ The program on the statement makes `execute` fail, but `close` succeed.
 
 Since the compiler can not know which methods will be called in which
 order, there is no way to verify that the wraps will have the right type.
-If you get it wrong, you will get a `ClassCastException` for the 
-`WrapperStep` if it does not match what the method returns. In particular,
+If you get it wrong, you will get a `ClassCastException` in the
+`WrapperStep` when it calls a wrapper (i.e. wrap constructor) whose
+argument type does not match what the method returns. In particular,
 it is not possible to wrap the result of a `void` method. In this case,
 `InvalidArgumentException` is thrown.
 

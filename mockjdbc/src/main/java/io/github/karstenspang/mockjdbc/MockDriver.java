@@ -91,8 +91,20 @@ public class MockDriver implements Driver {
      * @param enable whether to enable password logging.
      *        The default is {@code false}.
      */
-    public void logPassword(boolean enable){
+    public static void logPassword(boolean enable){
+        instance.logPasswordInstance(enable);
+    }
+    
+    void logPasswordInstance(boolean enable){
         logPassword=enable;
+    }
+    
+    /**
+     * Whether logging of password is enabled
+     * @return status of password logging
+     */
+    public static boolean logPassword(){
+        return instance.logPassword;
     }
     
     /**
