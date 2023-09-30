@@ -198,7 +198,7 @@ public class MockDriverTest {
     {
         TestLogger drvLogger=TestLoggerFactory.getTestLogger(MockDriver.class);
         MockDriver driver=new MockDriver("test1.pom.properties");
-        driver.logPassword(true);
+        driver.logPasswordInstance(true);
         Properties props=new Properties();
         props.setProperty("password","secret");
         drvLogger.clear();
@@ -259,5 +259,20 @@ public class MockDriverTest {
             "Apply PassThruStep to DriverManager.getConnection(jdbc:h2:mem:,null)"
         );
         assertEquals(expected,messages);
+    }
+    
+    @Test
+    @DisplayName("The logPassword method calls the logPasswordInstance method in the instance")
+    void testStaticLogPassword(){
+        boolean savedLogPassword=MockDriver.logPassword();
+        try{
+            MockDriver.logPassword(true);
+            assertTrue(MockDriver.logPassword());
+            MockDriver.logPassword(false);
+            assertFalse(MockDriver.logPassword());
+        }
+        finally{
+            MockDriver.logPassword(savedLogPassword);
+        }
     }
 }
