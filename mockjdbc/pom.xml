@@ -64,11 +64,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.opentest4j</groupId>
       <artifactId>opentest4j</artifactId>
       <scope>test</scope>
@@ -93,6 +88,7 @@
           <configuration>
             <excludes>
               <exclude>**/wrap/*</exclude>
+              <exclude>**/noop/*</exclude>
             </excludes>
           </configuration>
         </plugin>

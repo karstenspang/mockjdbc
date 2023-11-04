@@ -19,14 +19,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class WrapperStepTest {
-    @BeforeAll
-    static void init()
-        throws ClassNotFoundException
-    {
-        // Make sure the H2 driver is loaded.
-        Class.forName("org.h2.Driver");
-    }
-    
     @Test
     @DisplayName("Superclass of wrap throws ClassCastException")
     public void testUp()
@@ -38,7 +30,7 @@ public class WrapperStepTest {
             ))
         ));
         
-        try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:","user","pwd")){
+        try(Connection conn=DriverManager.getConnection("jdbc:mock:noop:","user","pwd")){
             assertThrows(ClassCastException.class,()->conn.prepareStatement("select 0"));
         }
     }
@@ -54,7 +46,7 @@ public class WrapperStepTest {
             ))
         ));
         
-        try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:","user","pwd")){
+        try(Connection conn=DriverManager.getConnection("jdbc:mock:noop:","user","pwd")){
             assertThrows(ClassCastException.class,()->conn.createStatement());
         }
     }

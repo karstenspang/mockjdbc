@@ -21,15 +21,6 @@ import com.github.valfirst.slf4jtest.TestLoggerFactory;
 
 @ExtendWith(JulConfigExtension.class)
 public class MockDriverTest {
-    
-    // For some reason, the H2 driver is not loaded automatically by DriverManager
-    @BeforeAll
-    static void init()
-        throws ClassNotFoundException
-    {
-        Class.forName("org.h2.Driver");
-    }
-    
     @Test
     @DisplayName("Major and minor version can be extracted from pom.properties")
     public void testVersion()
@@ -132,9 +123,9 @@ public class MockDriverTest {
         ExceptionStep step=new ExceptionStep(myex);
         List<Step> program=Arrays.asList(step);
         MockDriver.setProgram(program);
-        SQLException ex=assertThrows(SQLException.class,()->DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties()));
+        SQLException ex=assertThrows(SQLException.class,()->DriverManager.getConnection("jdbc:mock:noop:",new Properties()));
         assertEquals(myex,ex);
-        Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties());
+        Connection conn=DriverManager.getConnection("jdbc:mock:noop:",new Properties());
         conn.close();
     }
     
@@ -144,7 +135,7 @@ public class MockDriverTest {
         throws SQLException
     {
         MockDriver.setProgram(null);
-        Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties());
+        Connection conn=DriverManager.getConnection("jdbc:mock:noop:",new Properties());
         conn.close();
     }
     
@@ -157,7 +148,7 @@ public class MockDriverTest {
         MockDriver.setProgram(Arrays.asList(new ExceptionStep(ex)));
         TestThread t=new TestThread(()->{
             SQLException thrown=assertThrows(SQLException.class,()->{
-                Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties());
+                Connection conn=DriverManager.getConnection("jdbc:mock:noop:",new Properties());
                 conn.close();
             });
             assertSame(ex,thrown);
@@ -177,7 +168,7 @@ public class MockDriverTest {
         Properties props=new Properties();
         props.setProperty("password","secret");
         drvLogger.clear();
-        driver.connect("jdbc:mock:h2:mem:",props);
+        driver.connect("jdbc:mock:noop:",props);
         List<LoggingEvent> events=drvLogger.getLoggingEvents();
         List<String> messages=new ArrayList<>();
         for (LoggingEvent event:events){
@@ -185,8 +176,8 @@ public class MockDriverTest {
         }
         
         List<String> expected=Arrays.asList(
-            "connect(jdbc:mock:h2:mem:,{password=[HIDDEN]})",
-            "Apply PassThruStep to DriverManager.getConnection(jdbc:h2:mem:,{password=[HIDDEN]})"
+            "connect(jdbc:mock:noop:,{password=[HIDDEN]})",
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{password=[HIDDEN]})"
         );
         assertEquals(expected,messages);
     }
@@ -202,7 +193,7 @@ public class MockDriverTest {
         Properties props=new Properties();
         props.setProperty("password","secret");
         drvLogger.clear();
-        driver.connect("jdbc:mock:h2:mem:",props);
+        driver.connect("jdbc:mock:noop:",props);
         List<LoggingEvent> events=drvLogger.getLoggingEvents();
         List<String> messages=new ArrayList<>();
         for (LoggingEvent event:events){
@@ -210,8 +201,8 @@ public class MockDriverTest {
         }
         
         List<String> expected=Arrays.asList(
-            "connect(jdbc:mock:h2:mem:,{password=secret})",
-            "Apply PassThruStep to DriverManager.getConnection(jdbc:h2:mem:,{password=secret})"
+            "connect(jdbc:mock:noop:,{password=secret})",
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{password=secret})"
         );
         assertEquals(expected,messages);
     }
@@ -225,7 +216,7 @@ public class MockDriverTest {
         MockDriver driver=new MockDriver("test1.pom.properties");
         Properties props=new Properties();
         drvLogger.clear();
-        driver.connect("jdbc:mock:h2:mem:",props);
+        driver.connect("jdbc:mock:noop:",props);
         List<LoggingEvent> events=drvLogger.getLoggingEvents();
         List<String> messages=new ArrayList<>();
         for (LoggingEvent event:events){
@@ -233,8 +224,8 @@ public class MockDriverTest {
         }
         
         List<String> expected=Arrays.asList(
-            "connect(jdbc:mock:h2:mem:,{})",
-            "Apply PassThruStep to DriverManager.getConnection(jdbc:h2:mem:,{})"
+            "connect(jdbc:mock:noop:,{})",
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{})"
         );
         assertEquals(expected,messages);
     }
@@ -247,7 +238,7 @@ public class MockDriverTest {
         TestLogger drvLogger=TestLoggerFactory.getTestLogger(MockDriver.class);
         MockDriver driver=new MockDriver("test1.pom.properties");
         drvLogger.clear();
-        driver.connect("jdbc:mock:h2:mem:",null);
+        driver.connect("jdbc:mock:noop:",null);
         List<LoggingEvent> events=drvLogger.getLoggingEvents();
         List<String> messages=new ArrayList<>();
         for (LoggingEvent event:events){
@@ -255,8 +246,8 @@ public class MockDriverTest {
         }
         
         List<String> expected=Arrays.asList(
-            "connect(jdbc:mock:h2:mem:,null)",
-            "Apply PassThruStep to DriverManager.getConnection(jdbc:h2:mem:,null)"
+            "connect(jdbc:mock:noop:,null)",
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,null)"
         );
         assertEquals(expected,messages);
     }

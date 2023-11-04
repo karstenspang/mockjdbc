@@ -42,7 +42,7 @@ public class WrapGenerator {
             java.sql.Struct.class)));
     }
     private static final Set<MethodDesc> objectMethods=getObjectMethods();
-    private static final String packageName="io.github.karstenspang.mockjdbc";
+    private static final String basePackageName="io.github.karstenspang.mockjdbc";
     
     /**
      * Generate wraps for the interfaces in java.sql, as per JDBC 4.2 (Java 8).
@@ -58,17 +58,20 @@ public class WrapGenerator {
     {
         Set<Class<?>> knownInterfaces=new HashSet<>(interfaces);
         knownInterfaces.addAll(specialInterfaces);
-        File dir=new File(new File(new File(baseDir),packageName.replace('.',File.separatorChar)),"wrap");
-        dir.mkdirs();
+        File wrapDir=new File(new File(new File(baseDir),basePackageName.replace('.',File.separatorChar)),"wrap");
+        File noopDir=new File(new File(new File(baseDir),basePackageName.replace('.',File.separatorChar)),"noop");
+        wrapDir.mkdirs();
+        noopDir.mkdirs();
         for (Class<?> clazz:interfaces){
-            generateWrap(clazz,packageName,dir,knownInterfaces);
+            generateWrap(clazz,wrapDir,noopDir,knownInterfaces);
         }
     }
     
-    private static void generateWrap(Class<?> ifClass,String basePackageName,File dir,Set<Class<?>> knownInterfaces)
+    private static void generateWrap(Class<?> ifClass,File wrapDir,File noopDir,Set<Class<?>> knownInterfaces)
         throws IOException
     {
-        String packageName=basePackageName+".wrap";
+        String wrapPackageName=basePackageName+".wrap";
+        String noopPackageName=basePackageName+".noop";
         if (!ifClass.isInterface()) throw new IllegalArgumentException("Class "+ifClass.getName()+" is not an interface");
         if (ifClass.isAnnotation()) throw new IllegalArgumentException("Class "+ifClass.getName()+" is an annotation");
         Set<Class<?>> extendedInterfaces=new HashSet<>(Arrays.asList(ifClass.getInterfaces()));
@@ -78,194 +81,282 @@ public class WrapGenerator {
         Set<Class<?>> extendedSpecialInterfaces=new HashSet<>(extendedInterfaces);
         extendedSpecialInterfaces.removeAll(notSpecialInterfaces);
         if (notSpecialInterfaces.size()>1) throw new IllegalArgumentException("Class "+ifClass.getName()+" extends more than one interface");
-        File javaFile=new File(dir,ifClass.getSimpleName()+"Wrap.java");
-        try(OutputStream os=new FileOutputStream(javaFile);Writer writer=new BufferedWriter(new OutputStreamWriter(os,StandardCharsets.UTF_8)))
+        File wrapJavaFile=new File(wrapDir,ifClass.getSimpleName()+"Wrap.java");
+        File noopJavaFile=new File(noopDir,"Noop"+ifClass.getSimpleName()+".java");
+        try(OutputStream wos=new FileOutputStream(wrapJavaFile);Writer wrapWriter=new BufferedWriter(new OutputStreamWriter(wos,StandardCharsets.UTF_8));
+            OutputStream nos=new FileOutputStream(noopJavaFile);Writer noopWriter=new BufferedWriter(new OutputStreamWriter(nos,StandardCharsets.UTF_8)))
         {
-            writer.write("package "+packageName+";\n");
-            writer.write("\n");
-            writer.write("import "+basePackageName+".Program;\n");
-            writer.write("import "+basePackageName+".Step;\n");
-            writer.write("import "+basePackageName+".Wrap;\n");
-            writer.write("import "+basePackageName+".Wrapper;\n");
-            writer.write("import "+ifClass.getCanonicalName()+";\n");
-            writer.write("import java.util.Arrays;\n");
-            writer.write("import java.util.function.Supplier;\n");
-            writer.write("import java.util.logging.Logger;\n");
-            writer.write("\n");
-            writer.write("/**\n");
-            writer.write(" * Auto-generated wrap of {@link "+ifClass.getSimpleName()+"} with a {@link Supplier}{@code <}{@link Step}{@code >} (the program).\n");
-            writer.write(" * Every method call will have a step from the program applied, in the order they are returned.\n");
-            writer.write(" */\n");
-            writer.write("public class "+ifClass.getSimpleName()+"Wrap extends "+(notSpecialInterfaces.isEmpty()?"":notSpecialInterfaces.toArray(new Class<?>[1])[0].getSimpleName())+"Wrap implements "+ifClass.getSimpleName()+" {\n");
-            writer.write("    private static final String className=\""+packageName+"."+ifClass.getSimpleName()+"Wrap\";\n");
-            writer.write("    private static final Logger logger=Logger.getLogger(className);\n");
-            writer.write("    /**\n");
-            writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
-            writer.write("     * Note that this constructor can be used as a target for {@link Wrapper}{@code <}{@link "+ifClass.getSimpleName()+"}{@code >}.\n");
-            writer.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
-            writer.write("     * @param stepSupplier {@link Supplier}{@code <}{@link Step}{@code >} to wrap the object with\n");
-            writer.write("     */\n");
-            writer.write("    public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
-            writer.write("        this(className,wrapped,stepSupplier);\n");
-            writer.write("    }\n");
-            writer.write("    /**\n");
-            writer.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
-            writer.write("     * Convenience constructor that uses a {@link Program} to provide the steps.\n");
-            writer.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
-            writer.write("     * @param steps {@link Step}s to wrap the object with\n");
-            writer.write("     */\n");
-            writer.write("    public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Iterable<Step> steps){\n");
-            writer.write("        this(wrapped,new Program(steps));\n");
-            writer.write("    }\n");
-            writer.write("    protected "+ifClass.getSimpleName()+"Wrap(String className,"+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
-            writer.write("        super(className,wrapped,stepSupplier);\n");
-            writer.write("    }\n");
-            writer.write("\n");
+            wrapWriter.write("package "+wrapPackageName+";\n");
+            wrapWriter.write("\n");
+            wrapWriter.write("import "+basePackageName+".Program;\n");
+            wrapWriter.write("import "+basePackageName+".Step;\n");
+            wrapWriter.write("import "+basePackageName+".Wrap;\n");
+            wrapWriter.write("import "+basePackageName+".Wrapper;\n");
+            wrapWriter.write("import "+ifClass.getCanonicalName()+";\n");
+            wrapWriter.write("import java.util.Arrays;\n");
+            wrapWriter.write("import java.util.function.Supplier;\n");
+            wrapWriter.write("import java.util.logging.Logger;\n");
+            wrapWriter.write("\n");
+            wrapWriter.write("/**\n");
+            wrapWriter.write(" * Auto-generated wrap of {@link "+ifClass.getSimpleName()+"} with a {@link Supplier}{@code <}{@link Step}{@code >} (the program).\n");
+            wrapWriter.write(" * Every method call will have a step from the program applied, in the order they are returned.\n");
+            wrapWriter.write(" */\n");
+            wrapWriter.write("public class "+ifClass.getSimpleName()+"Wrap extends "+(notSpecialInterfaces.isEmpty()?"":notSpecialInterfaces.toArray(new Class<?>[1])[0].getSimpleName())+"Wrap implements "+ifClass.getSimpleName()+" {\n");
+            wrapWriter.write("    private static final String className=\""+wrapPackageName+"."+ifClass.getSimpleName()+"Wrap\";\n");
+            wrapWriter.write("    private static final Logger logger=Logger.getLogger(className);\n");
+            wrapWriter.write("    /**\n");
+            wrapWriter.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
+            wrapWriter.write("     * Note that this constructor can be used as a target for {@link Wrapper}{@code <}{@link "+ifClass.getSimpleName()+"}{@code >}.\n");
+            wrapWriter.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
+            wrapWriter.write("     * @param stepSupplier {@link Supplier}{@code <}{@link Step}{@code >} to wrap the object with\n");
+            wrapWriter.write("     */\n");
+            wrapWriter.write("    public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
+            wrapWriter.write("        this(className,wrapped,stepSupplier);\n");
+            wrapWriter.write("    }\n");
+            wrapWriter.write("    /**\n");
+            wrapWriter.write("     * Wrap a {@link "+ifClass.getSimpleName()+"}.\n");
+            wrapWriter.write("     * Convenience constructor that uses a {@link Program} to provide the steps.\n");
+            wrapWriter.write("     * @param wrapped {@link "+ifClass.getSimpleName()+"} to wrap\n");
+            wrapWriter.write("     * @param steps {@link Step}s to wrap the object with\n");
+            wrapWriter.write("     */\n");
+            wrapWriter.write("    public "+ifClass.getSimpleName()+"Wrap("+ifClass.getSimpleName()+" wrapped,Iterable<Step> steps){\n");
+            wrapWriter.write("        this(wrapped,new Program(steps));\n");
+            wrapWriter.write("    }\n");
+            wrapWriter.write("    protected "+ifClass.getSimpleName()+"Wrap(String className,"+ifClass.getSimpleName()+" wrapped,Supplier<Step> stepSupplier){\n");
+            wrapWriter.write("        super(className,wrapped,stepSupplier);\n");
+            wrapWriter.write("    }\n");
+            wrapWriter.write("\n");
+            
+            noopWriter.write("package "+noopPackageName+";\n");
+            noopWriter.write("\n");
+            noopWriter.write("import "+ifClass.getCanonicalName()+";\n");
+            noopWriter.write("\n");
+            noopWriter.write("/**\n");
+            noopWriter.write(" * No-op implementaion of {@link "+ifClass.getSimpleName()+"}.\n");
+            noopWriter.write(" */\n");
+            noopWriter.write("public class Noop"+ifClass.getSimpleName());
+            if (!notSpecialInterfaces.isEmpty()){
+                noopWriter.write(" extends Noop"+notSpecialInterfaces.toArray(new Class<?>[1])[0].getSimpleName());
+            }
+            noopWriter.write(" implements "+ifClass.getSimpleName()+" {\n");
+            noopWriter.write("    private static Noop"+ifClass.getSimpleName()+" instance=new Noop"+ifClass.getSimpleName()+"();\n");
+            noopWriter.write("    public static Noop"+ifClass.getSimpleName()+" instance(){return instance;}\n");
+            noopWriter.write("    protected Noop"+ifClass.getSimpleName()+"(){}\n");
             Method[] methods=ifClass.getDeclaredMethods();
             if (methods.length>0||extendedSpecialInterfaces.contains(Wrapper.class)){
-                writer.write("    @SuppressWarnings(\"unchecked\")\n");
-                writer.write("    private final "+ifClass.getSimpleName()+" getWrapped"+ifClass.getSimpleName()+"(){\n");
-                writer.write("        return ("+ifClass.getSimpleName()+")wrapped;\n");
-                writer.write("    }\n");
-                writer.write("\n");
+                wrapWriter.write("    @SuppressWarnings(\"unchecked\")\n");
+                wrapWriter.write("    private final "+ifClass.getSimpleName()+" getWrapped"+ifClass.getSimpleName()+"(){\n");
+                wrapWriter.write("        return ("+ifClass.getSimpleName()+")wrapped;\n");
+                wrapWriter.write("    }\n");
+                wrapWriter.write("\n");
             }
             if (extendedSpecialInterfaces.contains(Wrapper.class)){
-                writer.write("    @Override\n");
-                writer.write("    public boolean isWrapperFor​(Class<?> iface)\n");
-                writer.write("        throws java.sql.SQLException\n");
-                writer.write("    {\n");
-                writer.write("        Step step=stepSupplier.get();\n");
-                writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".isWrapperFor​(\"+String.valueOf(iface)+\")\");\n");
-                writer.write("        boolean result=step.apply(()->getWrapped"+ifClass.getSimpleName()+"().isWrapperFor​(iface));\n");
-                writer.write("        logger.finest(\"Result: \"+String.valueOf(result));\n");
-                writer.write("        return result;\n");
-                writer.write("    }\n");
-                writer.write("    @Override\n");
-                writer.write("    public <T> T unwrap​(Class<T> iface)\n");
-                writer.write("        throws java.sql.SQLException\n");
-                writer.write("    {\n");
-                writer.write("        Step step=stepSupplier.get();\n");
-                writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".unWrap(\"+String.valueOf(iface)+\")\");\n");
-                writer.write("        T result=stepSupplier.get().apply(()->getWrapped"+ifClass.getSimpleName()+"().unwrap(iface));\n");
-                writer.write("        logger.finest(\"Result: \"+String.valueOf(result));\n");
-                writer.write("        return result;\n");
-                writer.write("    }\n");
+                wrapWriter.write("    @Override\n");
+                wrapWriter.write("    public boolean isWrapperFor​(Class<?> iface)\n");
+                wrapWriter.write("        throws java.sql.SQLException\n");
+                wrapWriter.write("    {\n");
+                wrapWriter.write("        Step step=stepSupplier.get();\n");
+                wrapWriter.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".isWrapperFor​(\"+String.valueOf(iface)+\")\");\n");
+                wrapWriter.write("        boolean result=step.apply(()->getWrapped"+ifClass.getSimpleName()+"().isWrapperFor​(iface));\n");
+                wrapWriter.write("        logger.finest(\"Result: \"+String.valueOf(result));\n");
+                wrapWriter.write("        return result;\n");
+                wrapWriter.write("    }\n");
+                wrapWriter.write("    @Override\n");
+                wrapWriter.write("    public <T> T unwrap​(Class<T> iface)\n");
+                wrapWriter.write("        throws java.sql.SQLException\n");
+                wrapWriter.write("    {\n");
+                wrapWriter.write("        Step step=stepSupplier.get();\n");
+                wrapWriter.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+".unWrap(\"+String.valueOf(iface)+\")\");\n");
+                wrapWriter.write("        T result=stepSupplier.get().apply(()->getWrapped"+ifClass.getSimpleName()+"().unwrap(iface));\n");
+                wrapWriter.write("        logger.finest(\"Result: \"+String.valueOf(result));\n");
+                wrapWriter.write("        return result;\n");
+                wrapWriter.write("    }\n");
+                noopWriter.write("    @Override\n");
+                noopWriter.write("    public boolean isWrapperFor​(Class<?> iface)\n");
+                noopWriter.write("        throws java.sql.SQLException\n");
+                noopWriter.write("    {\n");
+                noopWriter.write("        return iface=="+ifClass.getSimpleName()+".class;\n");
+                noopWriter.write("    }\n");
+                noopWriter.write("    @Override\n");
+                noopWriter.write("    public <T> T unwrap​(Class<T> iface)\n");
+                noopWriter.write("        throws java.sql.SQLException\n");
+                noopWriter.write("    {\n");
+                noopWriter.write("        if (iface=="+ifClass.getSimpleName()+".class){\n");
+                noopWriter.write("            @SuppressWarnings(\"unchecked\")\n");
+                noopWriter.write("            T t=(T)this;\n");
+                noopWriter.write("            return t;\n");
+                noopWriter.write("        };\n");
+                noopWriter.write("        throw new java.sql.SQLException(iface.getName()+\" not implemented by Noop"+ifClass.getSimpleName()+"\");\n");
+                noopWriter.write("    }\n");
             }
             for (Method method:methods){
                 int modifiers=method.getModifiers();
                 if (Modifier.isStatic(modifiers)) continue;
                 if (!Modifier.isPublic(modifiers)) continue;
                 if (objectMethods.contains(new MethodDesc(method))) continue;
-                if (method.getAnnotation(Deprecated.class)!=null){
-                    writer.write("    @Deprecated\n");
-                }
-                writer.write("    @Override\n");
-                writer.write("    public ");
-                TypeVariable<Method>[] typeParameters=method.getTypeParameters();
-                if (typeParameters.length!=0){
-                    writer.write("<");
-                    int x=0;
-                    for (TypeVariable<Method> typeParameter:typeParameters){
-                        if (x!=0) writer.write(",");
-                        writer.write(typeParameter.getName());
-                        Type[] bounds=typeParameter.getBounds();
-                        if (bounds.length!=0){
-                            writer.write(" extends ");
-                            int y=0;
-                            for (Type bound:bounds){
-                                if (y!=0) writer.write("&");
-                                writer.write(bound.getTypeName());
-                            }
-                        }
-                    }
-                    writer.write("> ");
-                }
-                writer.write(method.getGenericReturnType().getTypeName()+" "+method.getName()+"(");
-                int pno=0;
-                for (Type param:method.getGenericParameterTypes()){
-                    if (pno!=0){
-                        writer.write(",");
-                    }
-                    writer.write(param.getTypeName()+" p"+String.valueOf(pno));
-                    pno++;
-                }
-                writer.write(")\n");
+                writeMethodHeader(wrapWriter,method);
+                writeMethodHeader(noopWriter,method);
+                
                 Set<Class<?>> exceptions=new HashSet<>(Arrays.asList(method.getExceptionTypes()));
                 if (!exceptions.isEmpty()){
-                    writer.write("        throws ");
+                    wrapWriter.write("        throws ");
                     int i=0;
                     for (Class<?> exception:exceptions){
-                        if (i!=0) writer.write(",");
-                        writer.write(exception.getCanonicalName());
+                        if (i!=0) wrapWriter.write(",");
+                        wrapWriter.write(exception.getCanonicalName());
                         i++;
                     }
-                    writer.write("\n");
+                    wrapWriter.write("\n");
                 }
-                writer.write("    {\n");
+                wrapWriter.write("    {\n");
                 if (!exceptions.contains(SQLException.class)){
-                    writer.write("        try{\n");
+                    wrapWriter.write("        try{\n");
                 }
-                writer.write("        Step step=stepSupplier.get();\n");
-                writer.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+"."+method.getName()+"(\"");
-                pno=0;
+                wrapWriter.write("        Step step=stepSupplier.get();\n");
+                wrapWriter.write("        logger.finest(\"Apply \"+String.valueOf(step)+\" to "+ifClass.getSimpleName()+"."+method.getName()+"(\"");
+                int pno=0;
                 for (Class<?> param:method.getParameterTypes()){
                     if (pno!=0){
-                        writer.write("+\",\"");
+                        wrapWriter.write("+\",\"");
                     }
                     if (param.isArray()){
-                        writer.write("+Arrays.toString(p"+String.valueOf(pno)+")");
+                        wrapWriter.write("+Arrays.toString(p"+String.valueOf(pno)+")");
                     }
                     else{
-                        writer.write("+String.valueOf(p"+String.valueOf(pno)+")");
+                        wrapWriter.write("+String.valueOf(p"+String.valueOf(pno)+")");
                     }
                     pno++;
                 }
-                writer.write("+\")\");\n");
-                writer.write("        ");
+                wrapWriter.write("+\")\");\n");
+                wrapWriter.write("        ");
                 if (!"void".equals(method.getGenericReturnType().getTypeName())){
-                    writer.write(method.getGenericReturnType().getTypeName()+" result=");
+                    wrapWriter.write(method.getGenericReturnType().getTypeName()+" result=");
                 }
-                writer.write("step.apply(()->getWrapped"+ifClass.getSimpleName()+"()."+method.getName()+"(");
+                wrapWriter.write("step.apply(()->getWrapped"+ifClass.getSimpleName()+"()."+method.getName()+"(");
                 for (int a=0;a<method.getParameterCount();a++){
                     if (a!=0){
-                        writer.write(",");
+                        wrapWriter.write(",");
                     }
-                    writer.write("p"+String.valueOf(a));
+                    wrapWriter.write("p"+String.valueOf(a));
                 }
-                writer.write("));\n");
+                wrapWriter.write("));\n");
                 if (!"void".equals(method.getGenericReturnType().getTypeName())){
-                    writer.write("        logger.finest(\"Result: \"+");
+                    wrapWriter.write("        logger.finest(\"Result: \"+");
                     if (method.getReturnType().isArray()){
-                        writer.write("Arrays.toString(result)");
+                        wrapWriter.write("Arrays.toString(result)");
                     }
                     else{
-                        writer.write("String.valueOf(result)");
+                        wrapWriter.write("String.valueOf(result)");
                     }
-                    writer.write(");\n");
-                    writer.write("        return result;\n");
+                    wrapWriter.write(");\n");
+                    wrapWriter.write("        return result;\n");
                 }
                 if (!exceptions.contains(SQLException.class)){
-                    writer.write("        }\n");
+                    wrapWriter.write("        }\n");
                     if (!exceptions.isEmpty()){
-                        writer.write("        catch(");
+                        wrapWriter.write("        catch(");
                         int i=0;
                         for (Class<?> exception:exceptions){
-                            if (i!=0) writer.write("|");
-                            writer.write(exception.getCanonicalName());
+                            if (i!=0) wrapWriter.write("|");
+                            wrapWriter.write(exception.getCanonicalName());
                             i++;
                         }
-                        writer.write(" e){\n");
-                        writer.write("            throw e;\n");
-                        writer.write("        }\n");
+                        wrapWriter.write(" e){\n");
+                        wrapWriter.write("            throw e;\n");
+                        wrapWriter.write("        }\n");
                     }
-                    writer.write("        catch(java.sql.SQLException e){\n");
-                    writer.write("            throw new UnsupportedOperationException(\"unsupported exception\",e);\n");
-                    writer.write("        }\n");
+                    wrapWriter.write("        catch(java.sql.SQLException e){\n");
+                    wrapWriter.write("            throw new UnsupportedOperationException(\"unsupported exception\",e);\n");
+                    wrapWriter.write("        }\n");
                 }
-                writer.write("    }\n");
+                wrapWriter.write("    }\n");
+                
+                noopWriter.write("    {\n");
+                Class<?> returnType=method.getReturnType();
+                if (returnType==Void.TYPE){
+                    // Nothing
+                }
+                else if (interfaces.contains(returnType)){
+                    noopWriter.write("        return Noop"+returnType.getSimpleName()+".instance();\n");
+                }
+                else if (returnType==Integer.TYPE){
+                    noopWriter.write("        return 0;\n");
+                }
+                else if (returnType==Long.TYPE){
+                    noopWriter.write("        return 0L;\n");
+                }
+                else if (returnType==Short.TYPE){
+                    noopWriter.write("        return 0;\n");
+                }
+                else if (returnType==Byte.TYPE){
+                    noopWriter.write("        return 0;\n");
+                }
+                else if (returnType==Double.TYPE){
+                    noopWriter.write("        return 0D;\n");
+                }
+                else if (returnType==Float.TYPE){
+                    noopWriter.write("        return 0F;\n");
+                }
+                else if (returnType==Boolean.TYPE){
+                    if (method.getName().equals("wasNull")){
+                        noopWriter.write("        return true;\n");
+                    }
+                    else{
+                        noopWriter.write("        return false;\n");
+                    }
+                }
+                else{
+                    noopWriter.write("        return null;\n");
+                }
+                noopWriter.write("    }\n");
             }
-            writer.write("}\n");
+            noopWriter.write("    @Override\n");
+            noopWriter.write("    public String toString(){\n");
+            noopWriter.write("        return \"Noop"+ifClass.getSimpleName()+"\";\n");
+            noopWriter.write("    }\n");
+            
+            wrapWriter.write("}\n");
+            noopWriter.write("}\n");
         }
+    }
+    
+    private static void writeMethodHeader(Writer writer,Method method)
+        throws IOException
+    {
+        if (method.getAnnotation(Deprecated.class)!=null){
+            writer.write("    @Deprecated\n");
+        }
+        writer.write("    @Override\n");
+        writer.write("    public ");
+        TypeVariable<Method>[] typeParameters=method.getTypeParameters();
+        if (typeParameters.length!=0){
+            writer.write("<");
+            int x=0;
+            for (TypeVariable<Method> typeParameter:typeParameters){
+                if (x!=0) writer.write(",");
+                writer.write(typeParameter.getName());
+                Type[] bounds=typeParameter.getBounds();
+                if (bounds.length!=0){
+                    writer.write(" extends ");
+                    int y=0;
+                    for (Type bound:bounds){
+                        if (y!=0) writer.write("&");
+                        writer.write(bound.getTypeName());
+                    }
+                }
+            }
+            writer.write("> ");
+        }
+        writer.write(method.getGenericReturnType().getTypeName()+" "+method.getName()+"(");
+        int pno=0;
+        for (Type param:method.getGenericParameterTypes()){
+            if (pno!=0){
+                writer.write(",");
+            }
+            writer.write(param.getTypeName()+" p"+String.valueOf(pno));
+            pno++;
+        }
+        writer.write(")\n");
     }
     
     private static Set<MethodDesc> getObjectMethods(){
@@ -277,3 +368,4 @@ public class WrapGenerator {
         return Collections.unmodifiableSet(methods);
     }
 }
+

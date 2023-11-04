@@ -1,1 +1,2 @@
 io.github.karstenspang.mockjdbc.MockDriver
+io.github.karstenspang.mockjdbc.noop.NoopDriver
