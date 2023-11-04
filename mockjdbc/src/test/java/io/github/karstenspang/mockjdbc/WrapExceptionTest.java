@@ -13,14 +13,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class WrapExceptionTest {
-    // For some reason, the H2 driver is not loaded automatically by DriverManager
-    @BeforeAll
-    static void init()
-        throws ClassNotFoundException
-    {
-        Class.forName("org.h2.Driver");
-    }
-    
     @Test
     @DisplayName("Throwing SQLException in Connection.setClientInfo results in UnsupportedOperationException")
     public void testConnectionSetClientInfoSQLException()
@@ -30,7 +22,7 @@ public class WrapExceptionTest {
         MockDriver.setProgram(Arrays.asList(
             new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList(
                 new ExceptionStep(ex)))));
-        try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:")){
+        try(Connection conn=DriverManager.getConnection("jdbc:mock:noop:")){
             Properties prop=new Properties();
             UnsupportedOperationException e=assertThrows(UnsupportedOperationException.class,()->conn.setClientInfo(prop));
             assertSame(ex,e.getCause());
@@ -46,7 +38,7 @@ public class WrapExceptionTest {
         MockDriver.setProgram(Arrays.asList(
             new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList(
                 new ExceptionStep(ex)))));
-        try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:")){
+        try(Connection conn=DriverManager.getConnection("jdbc:mock:noop:")){
             Properties prop=new Properties();
             SQLClientInfoException e=assertThrows(SQLClientInfoException.class,()->conn.setClientInfo(prop));
             assertSame(ex,e);

@@ -108,6 +108,18 @@ public class MockDriver implements Driver {
     }
     
     /**
+     * The major version of the driver
+     * @return the version
+     */
+    public static int majorVersion(){return instance.majorVersion;}
+    
+    /**
+     * The minor version of the driver
+     * @return the version
+     */
+    public static int minorVersion(){return instance.minorVersion;}
+    
+    /**
      * Takes an URL of the form {@code jdbc:mock:restofurl}, and
      * converts it into {@code jdbc:restofurl}, passing that to
      * {@link DriverManager#getConnection(String,Properties)}.
@@ -137,9 +149,18 @@ public class MockDriver implements Driver {
         else{
             logProps=info;
         }
-        logger.finest("connect("+String.valueOf(url)+","+String.valueOf(logProps)+")");
         if (!isOurUrl(url)) return null;
+        logger.finest("connect("+String.valueOf(url)+","+String.valueOf(logProps)+")");
+        // If there are less than 3 parts, isOurUrl will return false
         final String newUrl="jdbc:"+url.split(":",3)[2];
+        try{
+            // If the no-op driver is used, make sure it is loaded.
+            if ("noop".equals(url.split(":")[2])) Class.forName("io.github.karstenspang.mockjdbc.noop.NoopDriver");
+        }
+        // Not expected to happen
+        catch (ClassNotFoundException e){
+            throw new SQLException(e);
+        }
         Step step=stepSupplier.get();
         logger.finest("Apply "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+","+String.valueOf(logProps)+")");
         return step.apply(()->DriverManager.getConnection(newUrl,info));

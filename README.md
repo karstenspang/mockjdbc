@@ -15,7 +15,14 @@ It is controlled by a program, for example
 "return a connection the first two times, fail the third,
 and turn autocommit on the fourth". For unit testing, the
 real driver could be
-[the H2 in-memory database](https://www.h2database.com/).
+[the H2 in-memory database](https://www.h2database.com/)
+or the built-in [no-op JDBC driver](#noopdriver).
+If using H2, you may hit the problem that surefire doesn't
+always get the driver loaded. In that case you will need
+to load it explicitly in your test code the old-fashioned
+`Class.forName` way.
+The mock driver will detect if the no-op driver is used and
+make sure it is loaded.
 
 The returned connections themselves can be wrapped with
 a program, that can cause e.g. `Connection.createStatement()`
@@ -41,7 +48,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>1.5.5</version>
+  <version>1.6.0</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -111,14 +118,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 public class ConnectorTest {
-    @BeforeAll
-    static void init()
-        throws ClassNotFoundException
-    {
-        // Make sure the H2 driver is loaded.
-        Class.forName("org.h2.Driver");
-    }
-    
     @Test
     @DisplayName("If the connection fails once, and then succeeds, you will get a connection")
     public void testOneFailure()
@@ -132,15 +131,13 @@ public class ConnectorTest {
         PassThruStep step2=PassThruStep.instance();
         MockDriver.setProgram(Arrays.asList(step1,step2));
         // Run the test
-        Connection conn=Example.getConnection("jdbc:mock:h2:mem:","user","pwd",2,0L);
+        Connection conn=Example.getConnection("jdbc:mock:noop:","user","pwd",2,0L);
         conn.close();
     }
 }
 ```
-[The H2 in-memory database](https://www.h2database.com/)
-is used for unit testing, since we don't need
-an actual database in this case. It seems that surefire doesn't always get
-the driver loaded, so we do this explicitly.
+The built-in [no-op JDBC driver](#noopdriver) is used for unit testing,
+since we don't need an actual database in this case.
 
 It is not neccessary to include the second step, since the program will
 return a `PassThruStep` if called after the list of steps is exhausted.
@@ -211,16 +208,16 @@ public void testCheckConnection()
     TestLogger exampleLogger=TestLoggerFactory.getTestLogger(Example.class);
     exampleLogger.clear();
     MockDriver.setProgram(program);
-    Connection conn=Example.checkOrConnect(null,"jdbc:mock:h2:mem:","user","pwd");
-    conn=Example.checkOrConnect(conn,"jdbc:mock:h2:mem:","user","pwd");
+    Connection conn=Example.checkOrConnect(null,"jdbc:mock:noop:","user","pwd");
+    conn=Example.checkOrConnect(conn,"jdbc:mock:noop:","user","pwd");
     conn.close();
     List<LoggingEvent> events=exampleLogger.getLoggingEvents();
     List<LoggingEvent> expectedEvents=Arrays.asList(
-        LoggingEvent.info("Connecting to jdbc:mock:h2:mem:"),
+        LoggingEvent.info("Connecting to jdbc:mock:noop:"),
         LoggingEvent.debug("Checking connection"),
         LoggingEvent.error(disconnect,"Connection broken, closing"),
         LoggingEvent.debug(closeFail,"close failed"),
-        LoggingEvent.info("Connecting to jdbc:mock:h2:mem:")
+        LoggingEvent.info("Connecting to jdbc:mock:noop:")
     );
     assertEquals(expectedEvents,events);
 }
@@ -306,7 +303,7 @@ The case where `close()` fails on both statements:
 public void testClose()
     throws SQLException
 {
-    try(Connection conn=DriverManager.getConnection("jdbc:h2:mem:","user","pwd")){
+    try(Connection conn=DriverManager.getConnection("jdbc:noop:","user","pwd")){
         final SQLException ex1=new SQLException("1");
         final SQLException ex2=new SQLException("2");
         final Connection wrappedConnection=new ConnectionWrap(conn,Arrays.asList(
@@ -345,3 +342,13 @@ that all calls will be logged with level `FINEST`, corresponding to
 complete log of all JDBC calls, including arguments and returned results.
 You will of course also have to direct `java.util.logging` to the
 logging backend of your choice.
+
+### <a name="noopdriver"></a>No-op JDBC Driver
+
+A no-op JDBC driver is supplied with mockjdbc.
+The methods return dummy values, except for those returning an
+interface in `java.sql`. These methods return other no-op objects.
+In this way, a scaffold is created on which programs can be put
+to create a mock.
+For details, see 
+[its javadoc](https://javadoc.io/doc/io.github.karstenspang/mockjdbc/noop/package-summary.html).

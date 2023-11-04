@@ -22,14 +22,6 @@ import com.github.valfirst.slf4jtest.TestLoggerFactory;
 
 @ExtendWith(JulConfigExtension.class)
 public class ExampleTest {
-    @BeforeAll
-    static void init()
-        throws ClassNotFoundException
-    {
-        // Make sure the H2 driver is loaded.
-        Class.forName("org.h2.Driver");
-    }
-    
     @Test
     @DisplayName("Example 1: If the connection fails once, and then succeeds, you will get a connection")
     public void testOneFailure()
@@ -43,7 +35,7 @@ public class ExampleTest {
         PassThruStep step2=PassThruStep.instance();
         MockDriver.setProgram(Arrays.asList(step1,step2));
         // Run the test
-        Connection conn=Example.getConnection("jdbc:mock:h2:mem:","user","pwd",2,0L);
+        Connection conn=Example.getConnection("jdbc:mock:noop:","user","pwd",2,0L);
         conn.close();
     }
     
@@ -69,16 +61,16 @@ public class ExampleTest {
         TestLogger exampleLogger=TestLoggerFactory.getTestLogger(Example.class);
         exampleLogger.clear();
         MockDriver.setProgram(program);
-        Connection conn=Example.checkOrConnect(null,"jdbc:mock:h2:mem:","user","pwd");
-        conn=Example.checkOrConnect(conn,"jdbc:mock:h2:mem:","user","pwd");
+        Connection conn=Example.checkOrConnect(null,"jdbc:mock:noop:","user","pwd");
+        conn=Example.checkOrConnect(conn,"jdbc:mock:noop","user","pwd");
         conn.close();
         List<LoggingEvent> events=exampleLogger.getLoggingEvents();
         List<LoggingEvent> expectedEvents=Arrays.asList(
-            LoggingEvent.info("Connecting to jdbc:mock:h2:mem:"),
+            LoggingEvent.info("Connecting to jdbc:mock:noop:"),
             LoggingEvent.debug("Checking connection"),
             LoggingEvent.error(disconnect,"Connection broken, closing"),
             LoggingEvent.debug(closeFail,"close failed"),
-            LoggingEvent.info("Connecting to jdbc:mock:h2:mem:")
+            LoggingEvent.info("Connecting to jdbc:mock:noop")
         );
         assertEquals(expectedEvents,events);
     }
@@ -88,7 +80,7 @@ public class ExampleTest {
     public void testClose()
         throws SQLException
     {
-        try(Connection conn=DriverManager.getConnection("jdbc:h2:mem:","user","pwd")){
+        try(Connection conn=DriverManager.getConnection("jdbc:noop:","user","pwd")){
             final SQLException ex1=new SQLException("1");
             final SQLException ex2=new SQLException("2");
             final Connection wrappedConnection=new ConnectionWrap(conn,Arrays.asList(

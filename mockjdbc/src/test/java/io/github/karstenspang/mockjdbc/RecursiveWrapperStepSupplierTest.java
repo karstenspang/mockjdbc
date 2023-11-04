@@ -27,15 +27,6 @@ import com.github.valfirst.slf4jtest.TestLoggerFactory;
 
 @ExtendWith(JulConfigExtension.class)
 public class RecursiveWrapperStepSupplierTest {
-    
-    // For some reason, the H2 driver is not loaded automatically by DriverManager
-    @BeforeAll
-    static void init()
-        throws ClassNotFoundException
-    {
-        Class.forName("org.h2.Driver");
-    }
-    
     @Test
     @DisplayName("A Connection and all of its sub-objects are wrapped")
     public void testVersion()
@@ -51,15 +42,15 @@ public class RecursiveWrapperStepSupplierTest {
             logger.clear();
         }
         MockDriver.setStepSupplier(RecursiveWrapperStepSupplier.instance());
-        try(Connection conn=DriverManager.getConnection("jdbc:mock:h2:mem:",new Properties())){
+        try(Connection conn=DriverManager.getConnection("jdbc:mock:noop:",new Properties())){
             assertInstanceOf(ConnectionWrap.class,conn,"Connection");
             Statement stmt=conn.createStatement();
             assertInstanceOf(StatementWrap.class,stmt,"Statement");
-            ResultSet rs=stmt.executeQuery("select 1");
+            ResultSet rs=stmt.executeQuery("select 0");
             assertInstanceOf(ResultSetWrap.class,rs,"ResultSet 1");
             rs.next();
             int i=rs.getInt(1);
-            assertEquals(1,i);
+            assertEquals(0,i);
             rs=stmt.executeQuery("select null");
             assertInstanceOf(ResultSetWrap.class,rs,"ResultSet 2");
             rs.next();
@@ -70,10 +61,32 @@ public class RecursiveWrapperStepSupplierTest {
         for (TestLogger logger:loggers){
             events.addAll(logger.getLoggingEvents());
         }
-        // This won't work because we have no control over the strings returned by H2
-        //assertEquals(
-        //    Arrays.asList(...),
-        //    events);
+        assertEquals(
+            Arrays.asList(
+                LoggingEvent.debug("Setting step provider RecursiveWrapperStepSupplier"),
+                LoggingEvent.trace("connect(jdbc:mock:noop:,{})"),
+                LoggingEvent.trace("Apply RecursiveWrapperStep to DriverManager.getConnection(jdbc:noop:,{})"),
+                LoggingEvent.debug("Wrapping NoopConnection in io.github.karstenspang.mockjdbc.wrap.ConnectionWrap with step supplier RecursiveWrapperStepSupplier"), 
+                LoggingEvent.trace("Apply RecursiveWrapperStep to Connection.createStatement()"), 
+                LoggingEvent.trace("Result: io.github.karstenspang.mockjdbc.wrap.StatementWrap:{wrapped:NoopStatement,stepSupplier:RecursiveWrapperStepSupplier}"), 
+                LoggingEvent.trace("Apply RecursiveWrapperStep to Connection.close()"), 
+                LoggingEvent.debug("Wrapping NoopStatement in io.github.karstenspang.mockjdbc.wrap.StatementWrap with step supplier RecursiveWrapperStepSupplier"), 
+                LoggingEvent.trace("Apply RecursiveWrapperStep to Statement.executeQuery(select 0)"), 
+                LoggingEvent.trace("Result: io.github.karstenspang.mockjdbc.wrap.ResultSetWrap:{wrapped:NoopResultSet,stepSupplier:RecursiveWrapperStepSupplier}"), 
+                LoggingEvent.trace("Apply RecursiveWrapperStep to Statement.executeQuery(select null)"), 
+                LoggingEvent.trace("Result: io.github.karstenspang.mockjdbc.wrap.ResultSetWrap:{wrapped:NoopResultSet,stepSupplier:RecursiveWrapperStepSupplier}"), 
+                LoggingEvent.debug("Wrapping NoopResultSet in io.github.karstenspang.mockjdbc.wrap.ResultSetWrap with step supplier RecursiveWrapperStepSupplier"), 
+                LoggingEvent.trace("Apply RecursiveWrapperStep to ResultSet.next()"), 
+                LoggingEvent.trace("Result: false"), 
+                LoggingEvent.trace("Apply RecursiveWrapperStep to ResultSet.getInt(1)"), 
+                LoggingEvent.trace("Result: 0"), 
+                LoggingEvent.debug("Wrapping NoopResultSet in io.github.karstenspang.mockjdbc.wrap.ResultSetWrap with step supplier RecursiveWrapperStepSupplier"), 
+                LoggingEvent.trace("Apply RecursiveWrapperStep to ResultSet.next()"), 
+                LoggingEvent.trace("Result: false"), 
+                LoggingEvent.trace("Apply RecursiveWrapperStep to ResultSet.getString(1)"), 
+                LoggingEvent.trace("Result: null")
+            ),
+            events);
     }
     
     @Test
