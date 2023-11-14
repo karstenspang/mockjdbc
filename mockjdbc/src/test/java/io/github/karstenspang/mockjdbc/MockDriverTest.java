@@ -176,8 +176,8 @@ public class MockDriverTest {
         }
         
         List<String> expected=Arrays.asList(
-            "connect(jdbc:mock:noop:,{password=[HIDDEN]})",
-            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{password=[HIDDEN]})"
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{password=[HIDDEN]})",
+            "Result: NoopConnection"
         );
         assertEquals(expected,messages);
     }
@@ -201,8 +201,8 @@ public class MockDriverTest {
         }
         
         List<String> expected=Arrays.asList(
-            "connect(jdbc:mock:noop:,{password=secret})",
-            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{password=secret})"
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{password=secret})",
+            "Result: NoopConnection"
         );
         assertEquals(expected,messages);
     }
@@ -224,8 +224,8 @@ public class MockDriverTest {
         }
         
         List<String> expected=Arrays.asList(
-            "connect(jdbc:mock:noop:,{})",
-            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{})"
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{})",
+            "Result: NoopConnection"
         );
         assertEquals(expected,messages);
     }
@@ -246,8 +246,8 @@ public class MockDriverTest {
         }
         
         List<String> expected=Arrays.asList(
-            "connect(jdbc:mock:noop:,null)",
-            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,null)"
+            "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,null)",
+            "Result: NoopConnection"
         );
         assertEquals(expected,messages);
     }

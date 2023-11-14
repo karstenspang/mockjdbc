@@ -48,7 +48,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>1.6.1</version>
+  <version>1.6.2</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -336,7 +336,9 @@ MockDriver.setStepSupplier(RecursiveWrapperStepSupplier.instance());
 and of course put the `mock` into your connection string.
 The result is that
 every JDBC method call will go through a wrap. The effect of this is
-that all calls will be logged with level `FINEST`, corresponding to
+that all calls will be logged with level
+[`Level.FINEST`](https://docs.oracle.com/javase/8/docs/api/java/util/logging/Level.html#FINEST),
+ corresponding to
 `TRACE` in most logging backends. If you configure your backend to log
 `io.github.karstenspang.mockjdbc` at trace level, you will get a
 complete log of all JDBC calls, including arguments and returned results.
@@ -351,5 +353,5 @@ interface in `java.sql`. These methods return other no-op objects.
 In this way, a scaffold is created on which programs can be put
 to create a mock.
 For details, please see 
-[the javadoc](https://javadoc.io/static/io.github.karstenspang/mockjdbc/1.6.1/io/github/karstenspang/mockjdbc/noop/package-summary.html)
+[the javadoc](https://javadoc.io/static/io.github.karstenspang/mockjdbc/1.6.2/io/github/karstenspang/mockjdbc/noop/package-summary.html)
 for the package.

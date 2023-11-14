@@ -23,7 +23,9 @@ import java.util.regex.Pattern;
  * The rest of the URL will be prepended by {@code jdbc:} and a connection
  * will be opened by {@link DriverManager} with the resulting URL,
  * unless intercepted.<p>
- * The actions of the driver is controlled by a program.
+ * The actions of {@link #connect} is controlled by a program.
+ * The program is set using {@link #setStepSupplier} or
+ * {@link #setProgram}.
  * Initially, the program
  * is one that always returns {@link PassThruStep}, in
  * other words, real {@link Connection}s are returned.
@@ -120,21 +122,27 @@ public class MockDriver implements Driver {
     public static int minorVersion(){return instance.minorVersion;}
     
     /**
+     * Connect, delegating to the real driver. The delegation is
+     * subject to execution of the next {@link Step} from the
+     * {@link Supplier} associated with the {@link MockDriver}.
      * Takes an URL of the form {@code jdbc:mock:restofurl}, and
-     * converts it into {@code jdbc:restofurl}, passing that to
-     * {@link DriverManager#getConnection(String,Properties)}.
-     * This can be intercepted by a {@link Program}.
+     * converts it into {@code jdbc:restofurl}. Then an
+     * {@link SQLSupplier} calling
+     * {@link DriverManager#getConnection(String,Properties)} is passed 
+     * to {@link Step#apply(SQLSupplier)} for execution.
      * @param url The JDBC mock URL.
      * @param info Additional info to be passed to the real driver.
-     * @return Connection to the real driver, {@code null} if {@code url}
-     *         is does not start with {@code jdbc:mock:}.
-     * @throws SQLException if the program dictates it, or connecting
-     *         using the real driver fails.
+     * @return the result from {@link Step#apply(SQLSupplier)}, or
+     *         {@code null} if {@code url} is not of the required form.
+     * @throws SQLException if the {@link Step#apply(SQLSupplier)} or
+     *         {@link DriverManager#getConnection(String,Properties)}
+     *         does.
      */
     @Override
     public Connection connect​(final String url,final Properties info)
         throws SQLException
     {
+        if (!isOurUrl(url)) return null;
         Supplier<Step> stepSupplier=this.stepSupplier.get();
         if (stepSupplier==null){
             this.stepSupplier.set(emptySteps);
@@ -149,21 +157,21 @@ public class MockDriver implements Driver {
         else{
             logProps=info;
         }
-        if (!isOurUrl(url)) return null;
-        logger.finest("connect("+String.valueOf(url)+","+String.valueOf(logProps)+")");
         // If there are less than 3 parts, isOurUrl will return false
         final String newUrl="jdbc:"+url.split(":",3)[2];
         try{
             // If the no-op driver is used, make sure it is loaded.
             if ("noop".equals(url.split(":")[2])) Class.forName("io.github.karstenspang.mockjdbc.noop.NoopDriver");
         }
-        // Not expected to happen
+        // Should not happen, as the the NoopDriver is packaged in the same jar file.
         catch (ClassNotFoundException e){
             throw new SQLException(e);
         }
         Step step=stepSupplier.get();
         logger.finest("Apply "+String.valueOf(step)+" to DriverManager.getConnection("+String.valueOf(newUrl)+","+String.valueOf(logProps)+")");
-        return step.apply(()->DriverManager.getConnection(newUrl,info));
+        Connection result=step.apply(()->DriverManager.getConnection(newUrl,info));
+        logger.finest("Result: "+String.valueOf(result));
+        return result;
     }
     @Override
     public boolean acceptsURL​(String url){return isOurUrl(url);}

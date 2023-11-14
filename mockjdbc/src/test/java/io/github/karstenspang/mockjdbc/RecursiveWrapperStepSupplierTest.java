@@ -64,8 +64,8 @@ public class RecursiveWrapperStepSupplierTest {
         assertEquals(
             Arrays.asList(
                 LoggingEvent.debug("Setting step provider RecursiveWrapperStepSupplier"),
-                LoggingEvent.trace("connect(jdbc:mock:noop:,{})"),
                 LoggingEvent.trace("Apply RecursiveWrapperStep to DriverManager.getConnection(jdbc:noop:,{})"),
+                LoggingEvent.trace("Result: io.github.karstenspang.mockjdbc.wrap.ConnectionWrap:{wrapped:NoopConnection,stepSupplier:RecursiveWrapperStepSupplier}"),
                 LoggingEvent.debug("Wrapping NoopConnection in io.github.karstenspang.mockjdbc.wrap.ConnectionWrap with step supplier RecursiveWrapperStepSupplier"), 
                 LoggingEvent.trace("Apply RecursiveWrapperStep to Connection.createStatement()"), 
                 LoggingEvent.trace("Result: io.github.karstenspang.mockjdbc.wrap.StatementWrap:{wrapped:NoopStatement,stepSupplier:RecursiveWrapperStepSupplier}"), 
