@@ -21,23 +21,23 @@ public class RunnableStep implements Step {
     /**
      * Always throws {@link UnsupportedOperationException}, as there is no value to return.
      * @param <T> The type returned by this method.
-     * @param supplier Not used.
+     * @param method Not used.
      * @throws UnsupportedOperationException always
      * @return nothing
      */
     @Override
-    public <T> T apply(SQLSupplier<? extends T> supplier)
+    public <T> T apply(SQLSupplier<? extends T> method)
     {
         throw new UnsupportedOperationException("no value to return");
     }
     
     /**
      * Run the runnable stored by the constructor.
-     * @param action not used
+     * @param method not used
      * @throws SQLException if the stored runnable does.
      */
     @Override
-    public void apply(SQLRunnable action)
+    public void apply(SQLRunnable method)
         throws SQLException
     {
         runnable.run();

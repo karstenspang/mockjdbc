@@ -4,7 +4,8 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 /**
- * {@link Step} that returns a value from a stored {@link SQLSupplier}, rather than the passed by the wrap.
+ * {@link Step} that returns a value from a stored {@link SQLSupplier},
+ * rather than the one passed by the wrap.
  */
 public class SupplierStep implements Step {
     private SQLSupplier<?> supplier;
@@ -21,7 +22,7 @@ public class SupplierStep implements Step {
     /**
      * Return the value from the stored supplier.
      * @param <T> The type returned by this method.
-     * @param supplier Not used.
+     * @param method Not used.
      * @return the value returned by the supplier stored by the constructor.
      * @throws SQLException if the stored supplier does.
      * @throws ClassCastException if the value returned by the 
@@ -29,19 +30,19 @@ public class SupplierStep implements Step {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T apply(SQLSupplier<? extends T> supplier)
+    public <T> T apply(SQLSupplier<? extends T> method)
         throws SQLException
     {
-        return (T)this.supplier.get();
+        return (T)supplier.get();
     }
     
     /**
      * Always throws {@link UnsupportedOperationException}.
-     * @param action not used
+     * @param method not used
      * @throws UnsupportedOperationException always
      */
     @Override
-    public void apply(SQLRunnable action)
+    public void apply(SQLRunnable method)
     {
         throw new UnsupportedOperationException("value can not be returned");
     }

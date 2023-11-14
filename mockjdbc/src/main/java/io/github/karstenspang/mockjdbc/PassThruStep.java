@@ -20,27 +20,27 @@ public class PassThruStep implements Step {
     }
     
     /**
-     * Call the supplier and return the result.
+     * Call the method and return the result.
      * @param <T> The type of data returned by the step.
-     * @param supplier Called to get the result
-     * @return the result from {@code supplier}
-     * @throws SQLException if {@code supplier} does.
+     * @param method Called to get the result
+     * @return the result from {@code method}
+     * @throws SQLException if {@code method} does.
      */
-    public <T> T apply(SQLSupplier<? extends T> supplier)
+    public <T> T apply(SQLSupplier<? extends T> method)
         throws SQLException
     {
-        return supplier.get();
+        return method.get();
     }
     
     /**
-     * Perform the specified action
-     * @param action Action to perform
-     * @throws SQLException if {@code action} does.
+     * Call the method.
+     * @param method Method to call.
+     * @throws SQLException if {@code method} does.
      */
-    public void apply(SQLRunnable action)
+    public void apply(SQLRunnable method)
         throws SQLException
     {
-        action.run();
+        method.run();
     }
     
     @Override

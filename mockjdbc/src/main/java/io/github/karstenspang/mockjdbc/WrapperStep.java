@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * {@link Step} that wraps the supplied value.
+ * {@link Step} that wraps the value returned by the method called in {@link #apply(SQLSupplier)}.
  * The step is a {@link FilterStep} with a {@link WrapperFilter}.
  * @param <W> The wrapped type, e.g. {@link Connection}.
  */

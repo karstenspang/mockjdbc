@@ -2,8 +2,8 @@
  * Auto-generated classes that wrap the interfaces in {@link java.sql}.
  * They all extend {@link io.github.karstenspang.mockjdbc.Wrap}.
  * All methods defined in the interface are implemented to call the
- * corresponding method of the wrapped object, after application of a
- * {@link io.github.karstenspang.mockjdbc.Step}, for example
+ * corresponding method of the wrapped object indirectly in the application of a
+ * {@link io.github.karstenspang.mockjdbc.Step}. For example
  * {@link io.github.karstenspang.mockjdbc.wrap.ConnectionWrap#createStatement()}:
  *<pre>
  *&#64;Override
@@ -13,6 +13,7 @@
  *    return stepSupplier.get().apply(()-&gt;wrapped.createStatement());
  *}
  *</pre>
+ * It is up to {@code apply} to execute the method call.
  * In other words, <b>every</b> method call to a wrap causes a 
  * {@link io.github.karstenspang.mockjdbc.Step} to be supplied and applied.
  * However, this does not

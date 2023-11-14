@@ -17,7 +17,23 @@
  * {@link io.github.karstenspang.mockjdbc.MockDriver},
  * or on wraps. A step is an implementation of the interface
  * {@link io.github.karstenspang.mockjdbc.Step}.
- * The following pre-defined implementations exist:
+ * All methods in a wrap call the
+ * corresponding method of the wrapped object indirectly in the application of a
+ * step. For example
+ * {@link io.github.karstenspang.mockjdbc.wrap.ConnectionWrap#createStatement()}:
+ *<pre>
+ *&#64;Override
+ *public Statement createStatement()
+ *    throws SQLException
+ *{
+ *    return stepSupplier.get().apply(()-&gt;wrapped.createStatement());
+ *}
+ *</pre>
+ * It is up to {@code apply} to execute the method call.
+ * In other words, <b>every</b> method call to a wrap causes a 
+ * {@link io.github.karstenspang.mockjdbc.Step} to be supplied and applied.
+ * <p>
+ * The following pre-defined {@link io.github.karstenspang.mockjdbc.Step} implementations exist:
  * <ul>
  *  <li>{@link io.github.karstenspang.mockjdbc.PassThruStep} passes the method call on to the
  *      wrapped driver and returns the result.</li>
@@ -31,7 +47,7 @@
  *      arguments.
  *      The wrapper is usually a function reference to the
  *      construtor of a wrap, e.g. {@link io.github.karstenspang.mockjdbc.wrap.ConnectionWrap}{@code ::new}.
- *      Two constructor variations exist. In the first, the program
+ *      Two constructor variants exist. In the first, the program
  *      is an {@link java.lang.Iterable}{@code <}{@link io.github.karstenspang.mockjdbc.Step}{@code >}.
  *      This is usually a {@link java.util.List}, since you need the steps to be in
  *      a predictable sequence.

@@ -34,11 +34,11 @@ public class ExceptionStep implements Step {
     /**
      * Throw the exception supplied to the constructor.
      * @param <T> The type of data returned by the step.
-     * @param supplier Not called
+     * @param method Not called
      * @return None
      * @throws SQLException as requested.
      */
-    public <T> T apply(SQLSupplier<? extends T> supplier)
+    public <T> T apply(SQLSupplier<? extends T> method)
         throws SQLException
     {
         if (exception!=null) throw exception;
@@ -47,10 +47,10 @@ public class ExceptionStep implements Step {
     
     /**
      * Throw the exception supplied to the constructor.
-     * @param action Not called.
+     * @param method Not called.
      * @throws SQLException as requested.
      */
-    public void apply(SQLRunnable action)
+    public void apply(SQLRunnable method)
         throws SQLException
     {
         if (exception!=null) throw exception;

@@ -89,10 +89,10 @@ public class RecursiveWrapperStepSupplier implements Supplier<Step> {
     
     private static class RecursiveWrapperStep extends PassThruStep {
         @Override
-        public <T> T apply(SQLSupplier<? extends T> supplier)
+        public <T> T apply(SQLSupplier<? extends T> method)
             throws SQLException
         {
-            T result=supplier.get();
+            T result=method.get();
             if (result==null) return null;
             for (ClassWrapper<?> classWrapper:classWrappers){
                 @SuppressWarnings("unchecked")
