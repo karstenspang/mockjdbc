@@ -48,7 +48,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>1.6.0</version>
+  <version>1.6.1</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -125,7 +125,7 @@ public class ConnectorTest {
     {
         // Set up a program for MockDriver of two steps, one simulating
         // the error that we want to test, and the second step simply
-        // passes the connction request to the wrapped URL.
+        // passes the connection request to the wrapped URL.
         SQLException ex=new SQLException("db overloaded","00000",12520);
         ExceptionStep step1=new ExceptionStep(ex);
         PassThruStep step2=PassThruStep.instance();
@@ -351,4 +351,4 @@ interface in `java.sql`. These methods return other no-op objects.
 In this way, a scaffold is created on which programs can be put
 to create a mock.
 For details, see 
-[its javadoc](https://javadoc.io/doc/io.github.karstenspang/mockjdbc/noop/package-summary.html).
+[its javadoc](https://javadoc.io/static/io.github.karstenspang/mockjdbc/1.6.1/io/github/karstenspang/mockjdbc/noop/package-summary.html).

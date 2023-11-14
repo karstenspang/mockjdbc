@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 /**
  * Generate wraps around major interfaces in the {@link java.sql} package.<p>
@@ -140,6 +142,10 @@ public class WrapGenerator {
             }
             noopWriter.write(" implements "+ifClass.getSimpleName()+" {\n");
             noopWriter.write("    private static Noop"+ifClass.getSimpleName()+" instance=new Noop"+ifClass.getSimpleName()+"();\n");
+            noopWriter.write("    /**\n");
+            noopWriter.write("     * Access to the instance.\n");
+            noopWriter.write("     * @return the only instance of {@link Noop"+ifClass.getSimpleName()+"}\n");
+            noopWriter.write("     */\n");
             noopWriter.write("    public static Noop"+ifClass.getSimpleName()+" instance(){return instance;}\n");
             noopWriter.write("    protected Noop"+ifClass.getSimpleName()+"(){}\n");
             Method[] methods=ifClass.getDeclaredMethods();
@@ -171,22 +177,42 @@ public class WrapGenerator {
                 wrapWriter.write("        logger.finest(\"Result: \"+String.valueOf(result));\n");
                 wrapWriter.write("        return result;\n");
                 wrapWriter.write("    }\n");
+            }
+            if (getAllInterfaces(ifClass).contains(Wrapper.class)){
+                noopWriter.write("    /**\n");
+                noopWriter.write("     * @param iface Class to cast to\n");
+                noopWriter.write("     * @return {@code true} if {@code this} can be cast to the class represented\n");
+                noopWriter.write("     *         by {@code iface}, otherwise {@code false}.\n");
+                noopWriter.write("     */\n");
                 noopWriter.write("    @Override\n");
                 noopWriter.write("    public boolean isWrapperFor​(Class<?> iface)\n");
-                noopWriter.write("        throws java.sql.SQLException\n");
                 noopWriter.write("    {\n");
-                noopWriter.write("        return iface=="+ifClass.getSimpleName()+".class;\n");
+                noopWriter.write("        try{\n");
+                noopWriter.write("            Noop"+ifClass.getSimpleName()+".class.asSubclass(iface);\n");
+                noopWriter.write("            return true;\n");
+                noopWriter.write("        }\n");
+                noopWriter.write("        catch(ClassCastException e){\n");
+                noopWriter.write("            return false;\n");
+                noopWriter.write("        }\n");
                 noopWriter.write("    }\n");
+                noopWriter.write("    /**\n");
+                noopWriter.write("     * Casts {@code this} to {@code T}\n");
+                noopWriter.write("     * @param <T> class to cast to\n");
+                noopWriter.write("     * @param iface {@link Class} to cast to\n");
+                noopWriter.write("     * @return {@code this}\n");
+                noopWriter.write("     * @throws java.sql.SQLException if {@code T} is not a superclass of {@link Noop"+ifClass.getSimpleName()+"}.\n");
+                noopWriter.write("     *         The cause is a {@link ClassCastException}.\n");
+                noopWriter.write("     */\n");
                 noopWriter.write("    @Override\n");
                 noopWriter.write("    public <T> T unwrap​(Class<T> iface)\n");
                 noopWriter.write("        throws java.sql.SQLException\n");
                 noopWriter.write("    {\n");
-                noopWriter.write("        if (iface=="+ifClass.getSimpleName()+".class){\n");
-                noopWriter.write("            @SuppressWarnings(\"unchecked\")\n");
-                noopWriter.write("            T t=(T)this;\n");
-                noopWriter.write("            return t;\n");
-                noopWriter.write("        };\n");
-                noopWriter.write("        throw new java.sql.SQLException(iface.getName()+\" not implemented by Noop"+ifClass.getSimpleName()+"\");\n");
+                noopWriter.write("        try{\n");
+                noopWriter.write("            return iface.cast(this);\n");
+                noopWriter.write("        }\n");
+                noopWriter.write("        catch(ClassCastException e){\n");
+                noopWriter.write("            throw new java.sql.SQLException(e);\n");
+                noopWriter.write("        }\n");
                 noopWriter.write("    }\n");
             }
             for (Method method:methods){
@@ -310,6 +336,7 @@ public class WrapGenerator {
                 }
                 noopWriter.write("    }\n");
             }
+            noopWriter.write("    /** @return {@code \"Noop"+ifClass.getSimpleName()+"\"} */\n");
             noopWriter.write("    @Override\n");
             noopWriter.write("    public String toString(){\n");
             noopWriter.write("        return \"Noop"+ifClass.getSimpleName()+"\";\n");
@@ -367,5 +394,10 @@ public class WrapGenerator {
         }
         return Collections.unmodifiableSet(methods);
     }
+    
+    private static Set<Class<?>> getAllInterfaces(Class<?> type) {
+        return Stream.of(type.getInterfaces())
+                     .flatMap(interfaceType -> Stream.concat(Stream.of(interfaceType), getAllInterfaces(interfaceType).stream()))
+                     .collect(Collectors.toSet());
+    }
 }
-
