@@ -4,7 +4,8 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 /**
- * {@link Step} that returns a value from a stored {@link SQLSupplier}, rather than the passed by the wrap.
+ * {@link Step} that returns a value from a stored {@link SQLSupplier},
+ * rather than the one passed by the wrap.
  */
 public class SupplierStep implements Step {
     private SQLSupplier&lt;?&gt; supplier;
@@ -14,14 +15,14 @@ public class SupplierStep implements Step {
      * @param supplier is stored for use by {@link #apply(SQLSupplier)}.
      * @throws NullPointerException if {@code supplier} is {@code null}.
      */
-<span class="fc" id="L17">    public SupplierStep(SQLSupplier&lt;?&gt; supplier){</span>
-<span class="fc" id="L18">        this.supplier=Objects.requireNonNull(supplier,&quot;supplier is null&quot;);</span>
-<span class="fc" id="L19">    }</span>
+<span class="fc" id="L18">    public SupplierStep(SQLSupplier&lt;?&gt; supplier){</span>
+<span class="fc" id="L19">        this.supplier=Objects.requireNonNull(supplier,&quot;supplier is null&quot;);</span>
+<span class="fc" id="L20">    }</span>
     
     /**
      * Return the value from the stored supplier.
      * @param &lt;T&gt; The type returned by this method.
-     * @param supplier Not used.
+     * @param method Not used.
      * @return the value returned by the supplier stored by the constructor.
      * @throws SQLException if the stored supplier does.
      * @throws ClassCastException if the value returned by the 
@@ -29,26 +30,26 @@ public class SupplierStep implements Step {
      */
     @Override
     @SuppressWarnings(&quot;unchecked&quot;)
-    public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; supplier)
+    public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; method)
         throws SQLException
     {
-<span class="fc" id="L35">        return (T)this.supplier.get();</span>
+<span class="fc" id="L36">        return (T)supplier.get();</span>
     }
     
     /**
      * Always throws {@link UnsupportedOperationException}.
-     * @param action not used
+     * @param method not used
      * @throws UnsupportedOperationException always
      */
     @Override
-    public void apply(SQLRunnable action)
+    public void apply(SQLRunnable method)
     {
-<span class="fc" id="L46">        throw new UnsupportedOperationException(&quot;value can not be returned&quot;);</span>
+<span class="fc" id="L47">        throw new UnsupportedOperationException(&quot;value can not be returned&quot;);</span>
     }
     
     @Override
     public String toString(){
-<span class="fc" id="L51">        return &quot;SupplierStep&quot;;</span>
+<span class="fc" id="L52">        return &quot;SupplierStep&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

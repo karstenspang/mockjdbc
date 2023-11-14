@@ -17,24 +17,24 @@ public class ConstantStep implements Step {
     /**
      * Return the value supplied to the constructor.
      * @param &lt;T&gt; The type returned by this method.
-     * @param supplier Not used.
+     * @param method Not used.
      * @return The value supplied to the constructor.
      * @throws ClassCastException if the value supplied to the 
      *         constructor can not be cast to &lt;code&gt;&amp;lt;T&amp;gt;&lt;/code&gt;.
      */
     @Override
     @SuppressWarnings(&quot;unchecked&quot;)
-    public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; supplier)
+    public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; method)
     {
 <span class="fc" id="L29">        return (T)value;</span>
     }
     
     /**
      * Does nothing.
-     * @param action not used
+     * @param method not used
      */
     @Override
-    public void apply(SQLRunnable action)
+    public void apply(SQLRunnable method)
     {
 <span class="fc" id="L39">    }</span>
     

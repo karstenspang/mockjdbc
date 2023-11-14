@@ -23,7 +23,9 @@ import java.util.regex.Pattern;
  * The rest of the URL will be prepended by {@code jdbc:} and a connection
  * will be opened by {@link DriverManager} with the resulting URL,
  * unless intercepted.&lt;p&gt;
- * The actions of the driver is controlled by a program.
+ * The actions of {@link #connect} is controlled by a program.
+ * The program is set using {@link #setStepSupplier} or
+ * {@link #setProgram}.
  * Initially, the program
  * is one that always returns {@link PassThruStep}, in
  * other words, real {@link Connection}s are returned.
@@ -43,7 +45,7 @@ import java.util.regex.Pattern;
  */
 public class MockDriver implements Driver {
     private static final String pomPropertiesFile=&quot;META-INF/maven/io.github.karstenspang/mockjdbc/pom.properties&quot;;
-<span class="fc" id="L46">    private static final Logger logger=Logger.getLogger(MockDriver.class.getName());</span>
+<span class="fc" id="L48">    private static final Logger logger=Logger.getLogger(MockDriver.class.getName());</span>
     private static final MockDriver instance;
     private static final Supplier&lt;Step&gt; emptySteps;
     private InheritableThreadLocal&lt;Supplier&lt;Step&gt;&gt; stepSupplier;
@@ -51,16 +53,16 @@ public class MockDriver implements Driver {
     private final int minorVersion;
     private boolean logPassword;
     static{
-<span class="fc" id="L54">        emptySteps=new Program(Collections.emptyList());</span>
-<span class="fc" id="L55">        instance=new MockDriver();</span>
+<span class="fc" id="L56">        emptySteps=new Program(Collections.emptyList());</span>
+<span class="fc" id="L57">        instance=new MockDriver();</span>
         try{
-<span class="fc" id="L57">            DriverManager.registerDriver(instance);</span>
+<span class="fc" id="L59">            DriverManager.registerDriver(instance);</span>
         }
         // Not expected to happen
-<span class="nc" id="L60">        catch(SQLException e){</span>
-<span class="nc" id="L61">            throw new RuntimeException(e);</span>
-<span class="fc" id="L62">        }</span>
-<span class="fc" id="L63">    }</span>
+<span class="nc" id="L62">        catch(SQLException e){</span>
+<span class="nc" id="L63">            throw new RuntimeException(e);</span>
+<span class="fc" id="L64">        }</span>
+<span class="fc" id="L65">    }</span>
     
     /**
      * Set the program of the driver.
@@ -68,8 +70,8 @@ public class MockDriver implements Driver {
      *        the initial program is reinstated.
      */
     public static void setProgram(Iterable&lt;Step&gt; program){
-<span class="fc bfc" id="L71" title="All 2 branches covered.">        setStepSupplier(program==null?null:new Program(program));</span>
-<span class="fc" id="L72">    }</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        setStepSupplier(program==null?null:new Program(program));</span>
+<span class="fc" id="L74">    }</span>
     
     /**
      * Set the step provider of the driver.
@@ -77,14 +79,14 @@ public class MockDriver implements Driver {
      *        the initial program is reinstated.
      */
     public static void setStepSupplier(Supplier&lt;Step&gt; stepSupplier){
-<span class="fc" id="L80">        logger.fine(&quot;Setting step provider &quot;+String.valueOf(stepSupplier));</span>
-<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (stepSupplier==null){</span>
-<span class="fc" id="L82">            instance.stepSupplier.set(emptySteps);</span>
+<span class="fc" id="L82">        logger.fine(&quot;Setting step provider &quot;+String.valueOf(stepSupplier));</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (stepSupplier==null){</span>
+<span class="fc" id="L84">            instance.stepSupplier.set(emptySteps);</span>
         }
         else{
-<span class="fc" id="L85">            instance.stepSupplier.set(stepSupplier);</span>
+<span class="fc" id="L87">            instance.stepSupplier.set(stepSupplier);</span>
         }
-<span class="fc" id="L87">    }</span>
+<span class="fc" id="L89">    }</span>
     
     /**
      * Specify whether logging should include the password.
@@ -92,149 +94,155 @@ public class MockDriver implements Driver {
      *        The default is {@code false}.
      */
     public static void logPassword(boolean enable){
-<span class="fc" id="L95">        instance.logPasswordInstance(enable);</span>
-<span class="fc" id="L96">    }</span>
+<span class="fc" id="L97">        instance.logPasswordInstance(enable);</span>
+<span class="fc" id="L98">    }</span>
     
     void logPasswordInstance(boolean enable){
-<span class="fc" id="L99">        logPassword=enable;</span>
-<span class="fc" id="L100">    }</span>
+<span class="fc" id="L101">        logPassword=enable;</span>
+<span class="fc" id="L102">    }</span>
     
     /**
      * Whether logging of password is enabled
      * @return status of password logging
      */
     public static boolean logPassword(){
-<span class="fc" id="L107">        return instance.logPassword;</span>
+<span class="fc" id="L109">        return instance.logPassword;</span>
     }
     
     /**
      * The major version of the driver
      * @return the version
      */
-<span class="fc" id="L114">    public static int majorVersion(){return instance.majorVersion;}</span>
+<span class="fc" id="L116">    public static int majorVersion(){return instance.majorVersion;}</span>
     
     /**
      * The minor version of the driver
      * @return the version
      */
-<span class="fc" id="L120">    public static int minorVersion(){return instance.minorVersion;}</span>
+<span class="fc" id="L122">    public static int minorVersion(){return instance.minorVersion;}</span>
     
     /**
+     * Connect, delegating to the real driver. The delegation is
+     * subject to execution of the next {@link Step} from the
+     * {@link Supplier} associated with the {@link MockDriver}.
      * Takes an URL of the form {@code jdbc:mock:restofurl}, and
-     * converts it into {@code jdbc:restofurl}, passing that to
-     * {@link DriverManager#getConnection(String,Properties)}.
-     * This can be intercepted by a {@link Program}.
+     * converts it into {@code jdbc:restofurl}. Then an
+     * {@link SQLSupplier} calling
+     * {@link DriverManager#getConnection(String,Properties)} is passed 
+     * to {@link Step#apply(SQLSupplier)} for execution.
      * @param url The JDBC mock URL.
      * @param info Additional info to be passed to the real driver.
-     * @return Connection to the real driver, {@code null} if {@code url}
-     *         is does not start with {@code jdbc:mock:}.
-     * @throws SQLException if the program dictates it, or connecting
-     *         using the real driver fails.
+     * @return the result from {@link Step#apply(SQLSupplier)}, or
+     *         {@code null} if {@code url} is not of the required form.
+     * @throws SQLException if the {@link Step#apply(SQLSupplier)} or
+     *         {@link DriverManager#getConnection(String,Properties)}
+     *         does.
      */
     @Override
     public Connection connect​(final String url,final Properties info)
         throws SQLException
     {
-<span class="fc" id="L138">        Supplier&lt;Step&gt; stepSupplier=this.stepSupplier.get();</span>
-<span class="fc bfc" id="L139" title="All 2 branches covered.">        if (stepSupplier==null){</span>
-<span class="fc" id="L140">            this.stepSupplier.set(emptySteps);</span>
-<span class="fc" id="L141">            stepSupplier=emptySteps;</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        if (!isOurUrl(url)) return null;</span>
+<span class="fc" id="L146">        Supplier&lt;Step&gt; stepSupplier=this.stepSupplier.get();</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        if (stepSupplier==null){</span>
+<span class="fc" id="L148">            this.stepSupplier.set(emptySteps);</span>
+<span class="fc" id="L149">            stepSupplier=emptySteps;</span>
         }
         Properties logProps;
-<span class="fc bfc" id="L144" title="All 6 branches covered.">        if (!logPassword &amp;&amp; info!=null &amp;&amp; info.getProperty(&quot;password&quot;)!=null){</span>
-<span class="fc" id="L145">            logProps=new Properties();</span>
-<span class="fc" id="L146">            logProps.putAll(info);</span>
-<span class="fc" id="L147">            logProps.setProperty(&quot;password&quot;,&quot;[HIDDEN]&quot;);</span>
+<span class="fc bfc" id="L152" title="All 6 branches covered.">        if (!logPassword &amp;&amp; info!=null &amp;&amp; info.getProperty(&quot;password&quot;)!=null){</span>
+<span class="fc" id="L153">            logProps=new Properties();</span>
+<span class="fc" id="L154">            logProps.putAll(info);</span>
+<span class="fc" id="L155">            logProps.setProperty(&quot;password&quot;,&quot;[HIDDEN]&quot;);</span>
         }
         else{
-<span class="fc" id="L150">            logProps=info;</span>
+<span class="fc" id="L158">            logProps=info;</span>
         }
-<span class="fc bfc" id="L152" title="All 2 branches covered.">        if (!isOurUrl(url)) return null;</span>
-<span class="fc" id="L153">        logger.finest(&quot;connect(&quot;+String.valueOf(url)+&quot;,&quot;+String.valueOf(logProps)+&quot;)&quot;);</span>
         // If there are less than 3 parts, isOurUrl will return false
-<span class="fc" id="L155">        final String newUrl=&quot;jdbc:&quot;+url.split(&quot;:&quot;,3)[2];</span>
+<span class="fc" id="L161">        final String newUrl=&quot;jdbc:&quot;+url.split(&quot;:&quot;,3)[2];</span>
         try{
             // If the no-op driver is used, make sure it is loaded.
-<span class="pc bpc" id="L158" title="1 of 2 branches missed.">            if (&quot;noop&quot;.equals(url.split(&quot;:&quot;)[2])) Class.forName(&quot;io.github.karstenspang.mockjdbc.noop.NoopDriver&quot;);</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">            if (&quot;noop&quot;.equals(url.split(&quot;:&quot;)[2])) Class.forName(&quot;io.github.karstenspang.mockjdbc.noop.NoopDriver&quot;);</span>
         }
-        // Not expected to happen
-<span class="nc" id="L161">        catch (ClassNotFoundException e){</span>
-<span class="nc" id="L162">            throw new SQLException(e);</span>
-<span class="fc" id="L163">        }</span>
-<span class="fc" id="L164">        Step step=stepSupplier.get();</span>
-<span class="fc" id="L165">        logger.finest(&quot;Apply &quot;+String.valueOf(step)+&quot; to DriverManager.getConnection(&quot;+String.valueOf(newUrl)+&quot;,&quot;+String.valueOf(logProps)+&quot;)&quot;);</span>
-<span class="fc" id="L166">        return step.apply(()-&gt;DriverManager.getConnection(newUrl,info));</span>
+        // Should not happen, as the the NoopDriver is packaged in the same jar file.
+<span class="nc" id="L167">        catch (ClassNotFoundException e){</span>
+<span class="nc" id="L168">            throw new SQLException(e);</span>
+<span class="fc" id="L169">        }</span>
+<span class="fc" id="L170">        Step step=stepSupplier.get();</span>
+<span class="fc" id="L171">        logger.finest(&quot;Apply &quot;+String.valueOf(step)+&quot; to DriverManager.getConnection(&quot;+String.valueOf(newUrl)+&quot;,&quot;+String.valueOf(logProps)+&quot;)&quot;);</span>
+<span class="fc" id="L172">        Connection result=step.apply(()-&gt;DriverManager.getConnection(newUrl,info));</span>
+<span class="fc" id="L173">        logger.finest(&quot;Result: &quot;+String.valueOf(result));</span>
+<span class="fc" id="L174">        return result;</span>
     }
     @Override
-<span class="fc" id="L169">    public boolean acceptsURL​(String url){return isOurUrl(url);}</span>
+<span class="fc" id="L177">    public boolean acceptsURL​(String url){return isOurUrl(url);}</span>
     @Override
-<span class="fc" id="L171">    public int getMajorVersion(){return majorVersion;}</span>
+<span class="fc" id="L179">    public int getMajorVersion(){return majorVersion;}</span>
     @Override
-<span class="fc" id="L173">    public int getMinorVersion(){return minorVersion;}</span>
+<span class="fc" id="L181">    public int getMinorVersion(){return minorVersion;}</span>
     @Override
-<span class="fc" id="L175">    public Logger getParentLogger(){return Logger.getLogger(MockDriver.class.getPackage().getName());}</span>
+<span class="fc" id="L183">    public Logger getParentLogger(){return Logger.getLogger(MockDriver.class.getPackage().getName());}</span>
     @Override
-<span class="fc" id="L177">    public DriverPropertyInfo[] getPropertyInfo​(String url, Properties info){return new DriverPropertyInfo[0];}</span>
+<span class="fc" id="L185">    public DriverPropertyInfo[] getPropertyInfo​(String url, Properties info){return new DriverPropertyInfo[0];}</span>
     @Override
-<span class="fc" id="L179">    public boolean jdbcCompliant(){return true;}</span>
+<span class="fc" id="L187">    public boolean jdbcCompliant(){return true;}</span>
     
     private MockDriver()
     {
-<span class="fc" id="L183">        this(pomPropertiesFile);</span>
-<span class="fc" id="L184">    }</span>
+<span class="fc" id="L191">        this(pomPropertiesFile);</span>
+<span class="fc" id="L192">    }</span>
     
     // For testing methods other than connect
     MockDriver(String propertyFile)
-<span class="fc" id="L188">    {</span>
-<span class="fc" id="L189">        stepSupplier=new InheritableThreadLocal&lt;&gt;();</span>
+<span class="fc" id="L196">    {</span>
+<span class="fc" id="L197">        stepSupplier=new InheritableThreadLocal&lt;&gt;();</span>
         Properties pomProperties;
         try {
-<span class="fc" id="L192">            pomProperties=loadProperties(propertyFile);</span>
+<span class="fc" id="L200">            pomProperties=loadProperties(propertyFile);</span>
         }
-<span class="fc" id="L194">        catch(IOException e){</span>
-<span class="fc" id="L195">            logger.warning(&quot;Could not load property file &quot;+String.valueOf(propertyFile));</span>
-<span class="fc" id="L196">            pomProperties=new Properties();</span>
-<span class="fc" id="L197">        }</span>
+<span class="fc" id="L202">        catch(IOException e){</span>
+<span class="fc" id="L203">            logger.warning(&quot;Could not load property file &quot;+String.valueOf(propertyFile));</span>
+<span class="fc" id="L204">            pomProperties=new Properties();</span>
+<span class="fc" id="L205">        }</span>
         
-<span class="fc" id="L199">        logger.config(&quot;MockDriver version &quot;+String.valueOf(pomProperties.getProperty(&quot;version&quot;)));</span>
-<span class="fc" id="L200">        int[] versionParts=extractVersion(pomProperties.getProperty(&quot;version&quot;));</span>
-<span class="fc bfc" id="L201" title="All 2 branches covered.">        majorVersion=versionParts.length&gt;=1?versionParts[0]:0;</span>
-<span class="fc bfc" id="L202" title="All 2 branches covered.">        minorVersion=versionParts.length&gt;=2?versionParts[1]:0;</span>
-<span class="fc" id="L203">        logPassword=false;</span>
-<span class="fc" id="L204">    }</span>
+<span class="fc" id="L207">        logger.config(&quot;MockDriver version &quot;+String.valueOf(pomProperties.getProperty(&quot;version&quot;)));</span>
+<span class="fc" id="L208">        int[] versionParts=extractVersion(pomProperties.getProperty(&quot;version&quot;));</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">        majorVersion=versionParts.length&gt;=1?versionParts[0]:0;</span>
+<span class="fc bfc" id="L210" title="All 2 branches covered.">        minorVersion=versionParts.length&gt;=2?versionParts[1]:0;</span>
+<span class="fc" id="L211">        logPassword=false;</span>
+<span class="fc" id="L212">    }</span>
     
     private static boolean isOurUrl(String url){
-<span class="fc" id="L207">        return url.startsWith(&quot;jdbc:mock:&quot;);</span>
+<span class="fc" id="L215">        return url.startsWith(&quot;jdbc:mock:&quot;);</span>
     }
     
     private static Properties loadProperties(String fileName)
         throws IOException
     {
-<span class="fc" id="L213">        Properties props=new Properties();</span>
-<span class="fc" id="L214">        ClassLoader loader=Thread.currentThread().getContextClassLoader();</span>
+<span class="fc" id="L221">        Properties props=new Properties();</span>
+<span class="fc" id="L222">        ClassLoader loader=Thread.currentThread().getContextClassLoader();</span>
         // Never null with OpenJDK
-<span class="pc bpc" id="L216" title="1 of 2 branches missed.">        if (loader==null) loader=ClassLoader.getSystemClassLoader();</span>
-<span class="fc" id="L217">        InputStream stream=loader.getResourceAsStream(fileName);</span>
-<span class="fc bfc" id="L218" title="All 2 branches covered.">        if (stream==null) throw new IOException(&quot;Could not open resource &quot;+fileName);</span>
-<span class="fc" id="L219">        try (Reader reader=new InputStreamReader(stream,StandardCharsets.UTF_8)){</span>
-<span class="fc" id="L220">            props.load(reader);</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">        if (loader==null) loader=ClassLoader.getSystemClassLoader();</span>
+<span class="fc" id="L225">        InputStream stream=loader.getResourceAsStream(fileName);</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        if (stream==null) throw new IOException(&quot;Could not open resource &quot;+fileName);</span>
+<span class="fc" id="L227">        try (Reader reader=new InputStreamReader(stream,StandardCharsets.UTF_8)){</span>
+<span class="fc" id="L228">            props.load(reader);</span>
         }
-<span class="fc" id="L222">        return props;</span>
+<span class="fc" id="L230">        return props;</span>
     }
     
     private static int[] extractVersion(String versionString)
     {
-<span class="fc bfc" id="L227" title="All 2 branches covered.">        if (versionString==null) return new int[0];</span>
-<span class="fc" id="L228">        Pattern p=Pattern.compile(&quot;(\\d+(\\.\\d+)*).*&quot;);</span>
-<span class="fc" id="L229">        Matcher m=p.matcher(versionString);</span>
-<span class="fc bfc" id="L230" title="All 2 branches covered.">        if (!m.matches()) return new int[0];</span>
-<span class="fc" id="L231">        String versionPrefix=m.group(1);</span>
-<span class="fc" id="L232">        String[] versionParts=versionPrefix.split(&quot;\\.&quot;);</span>
-<span class="fc" id="L233">        int[] result=new int[versionParts.length];</span>
-<span class="fc bfc" id="L234" title="All 2 branches covered.">        for (int i=0;i&lt;versionParts.length;i++){</span>
-<span class="fc" id="L235">            result[i]=Integer.parseInt(versionParts[i]);</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">        if (versionString==null) return new int[0];</span>
+<span class="fc" id="L236">        Pattern p=Pattern.compile(&quot;(\\d+(\\.\\d+)*).*&quot;);</span>
+<span class="fc" id="L237">        Matcher m=p.matcher(versionString);</span>
+<span class="fc bfc" id="L238" title="All 2 branches covered.">        if (!m.matches()) return new int[0];</span>
+<span class="fc" id="L239">        String versionPrefix=m.group(1);</span>
+<span class="fc" id="L240">        String[] versionParts=versionPrefix.split(&quot;\\.&quot;);</span>
+<span class="fc" id="L241">        int[] result=new int[versionParts.length];</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">        for (int i=0;i&lt;versionParts.length;i++){</span>
+<span class="fc" id="L243">            result[i]=Integer.parseInt(versionParts[i]);</span>
         }
-<span class="fc" id="L237">        return result;</span>
+<span class="fc" id="L245">        return result;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

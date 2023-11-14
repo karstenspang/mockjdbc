@@ -5,11 +5,11 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 /**
- * {@link Step} that filters the supplied value.
+ * {@link Step} that filters the value returned by the method.
  * This is done by a {@link SQLFilter} that can perform
  * any transformation on the result.
  * One example could be a filter that takes a {@link Connection} and
- * sets some attribute on it, and then passes it on. This filter could
+ * sets some attribute on it, and then passes it on. That filter could
  * further be composed with a {@link WrapperFilter} to wrap the
  * connection before it is returned.
  * @param &lt;F&gt; The filtered type.
@@ -19,7 +19,7 @@ public class FilterStep&lt;F&gt; implements Step {
     
     /**
      * Construct the step, storing the filter for use in {@link #apply(SQLSupplier)}.
-     * @param filter Filter to apply to the result from the supplier in {@link #apply(SQLSupplier)}.
+     * @param filter Filter to apply to the result from the method call in {@link #apply(SQLSupplier)}.
      * @throws NullPointerException if {@code filter} is {@code null}.
      */
 <span class="fc" id="L25">    public FilterStep(SQLFilter&lt;F&gt; filter){</span>
@@ -27,28 +27,28 @@ public class FilterStep&lt;F&gt; implements Step {
 <span class="fc" id="L27">    }</span>
     
     /**
-     * Call the supplier, filter the result, and return the filtered value.
-     * @param &lt;T&gt; The type returned by {@code supplier} and this method. Must match &lt;code&gt;&amp;lt;F&amp;gt;&lt;/code&gt;.
-     * @param supplier Called to get the object to filter.
+     * Call the method, filter the result, and return the filtered value.
+     * @param &lt;T&gt; The type returned by {@code method} and this method. Must match &lt;code&gt;&amp;lt;F&amp;gt;&lt;/code&gt;.
+     * @param method Called to get the object to filter.
      * @return filtered value.
      * @throws SQLException if either {@code supplier} or the filter does.
      * @throws ClassCastException if &lt;code&gt;&amp;lt;F&amp;gt;&lt;/code&gt; and &lt;code&gt;&amp;lt;T&amp;gt;&lt;/code&gt; do not match.
      */
     @Override
     @SuppressWarnings(&quot;unchecked&quot;)
-    public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; supplier)
+    public &lt;T&gt; T apply(SQLSupplier&lt;? extends T&gt; method)
         throws SQLException
     {
-<span class="fc" id="L42">        return (T)filter.apply((F)supplier.get());</span>
+<span class="fc" id="L42">        return (T)filter.apply((F)method.get());</span>
     }
     
     /**
      * Always throws {@link UnsupportedOperationException}, as there is no way to filter {@code void}.
-     * @param action not used
+     * @param method not used
      * @throws UnsupportedOperationException always
      */
     @Override
-    public void apply(SQLRunnable action)
+    public void apply(SQLRunnable method)
     {
 <span class="fc" id="L53">        throw new UnsupportedOperationException(&quot;void cannot be filtered&quot;);</span>
     }
