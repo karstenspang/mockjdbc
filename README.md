@@ -16,7 +16,7 @@ It is controlled by a program, for example
 and turn autocommit on the fourth". For unit testing, the
 real driver could be
 [the H2 in-memory database](https://www.h2database.com/)
-or the built-in [no-op JDBC driver](#noopdriver).
+or the built-in [no-op JDBC driver](#no-op-jdbc-driver).
 If using H2, you may hit the problem that surefire doesn't
 always get the driver loaded. In that case you will need
 to load it explicitly in your test code the old-fashioned
@@ -343,12 +343,13 @@ complete log of all JDBC calls, including arguments and returned results.
 You will of course also have to direct `java.util.logging` to the
 logging backend of your choice.
 
-### <a name="noopdriver"></a>No-op JDBC Driver
+## No-op JDBC Driver
 
 A no-op JDBC driver is supplied with mockjdbc.
 The methods return dummy values, except for those returning an
 interface in `java.sql`. These methods return other no-op objects.
 In this way, a scaffold is created on which programs can be put
 to create a mock.
-For details, see 
-[its javadoc](https://javadoc.io/static/io.github.karstenspang/mockjdbc/1.6.1/io/github/karstenspang/mockjdbc/noop/package-summary.html).
+For details, please see 
+[the javadoc](https://javadoc.io/static/io.github.karstenspang/mockjdbc/1.6.1/io/github/karstenspang/mockjdbc/noop/package-summary.html)
+for the package.
