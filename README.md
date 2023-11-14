@@ -326,7 +326,7 @@ public void testClose()
 In this example, we already have a connection, but it is wrapped before it is
 passed to the `UsesConnection` constructor.
 
-### Trace all JDBC Method Calls
+## Trace all JDBC Method Calls
 
 If you need to know what call are made to JDBC, mockjdbc can help you
 there as well. You will have to insert this call into your code
