@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Wrapper;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,12 +27,12 @@ import java.util.stream.Collectors;
 public class WrapGenerator {
     private static final Set<Class<?>> specialInterfaces;
     static{
-        specialInterfaces=Collections.unmodifiableSet(new HashSet<>(Arrays.asList(Wrapper.class,AutoCloseable.class)));
+        specialInterfaces=Set.of(Wrapper.class,AutoCloseable.class);
     }
     private static final Set<Class<?>> interfaces;
     static{
         // Interfaces in java.sql as per JDBC 4.2, except Driver, DriverNotification, and Wrapper.
-        interfaces=Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+        interfaces=Set.of(
             java.sql.Array.class,java.sql.Blob.class,java.sql.CallableStatement.class,
             java.sql.Clob.class,java.sql.Connection.class,java.sql.DatabaseMetaData.class,
             java.sql.NClob.class,java.sql.ParameterMetaData.class,
@@ -41,9 +40,12 @@ public class WrapGenerator {
             java.sql.ResultSetMetaData.class,java.sql.RowId.class,java.sql.Savepoint.class,
             java.sql.SQLData.class,java.sql.SQLInput.class,java.sql.SQLOutput.class,
             java.sql.SQLType.class,java.sql.SQLXML.class,java.sql.Statement.class,
-            java.sql.Struct.class)));
+            java.sql.Struct.class);
     }
-    private static final Set<MethodDesc> objectMethods=getObjectMethods();
+    private static final Set<MethodDesc> objectMethods;
+    static{
+        objectMethods=Arrays.stream(Object.class.getDeclaredMethods()).filter(method->Modifier.isPublic(method.getModifiers())).map(method->new MethodDesc(method)).collect(Collectors.toUnmodifiableSet());
+    }
     private static final String basePackageName="io.github.karstenspang.mockjdbc";
     
     /**
@@ -76,7 +78,7 @@ public class WrapGenerator {
         String noopPackageName=basePackageName+".noop";
         if (!ifClass.isInterface()) throw new IllegalArgumentException("Class "+ifClass.getName()+" is not an interface");
         if (ifClass.isAnnotation()) throw new IllegalArgumentException("Class "+ifClass.getName()+" is an annotation");
-        Set<Class<?>> extendedInterfaces=new HashSet<>(Arrays.asList(ifClass.getInterfaces()));
+        Set<Class<?>> extendedInterfaces=Set.of(ifClass.getInterfaces());
         if (!knownInterfaces.containsAll(extendedInterfaces)) throw new IllegalArgumentException("Class "+ifClass.getName()+" extends unknown interfaces");
         Set<Class<?>> notSpecialInterfaces=new HashSet<>(extendedInterfaces);
         notSpecialInterfaces.removeAll(specialInterfaces);
@@ -223,7 +225,7 @@ public class WrapGenerator {
                 writeMethodHeader(wrapWriter,method);
                 writeMethodHeader(noopWriter,method);
                 
-                Set<Class<?>> exceptions=new HashSet<>(Arrays.asList(method.getExceptionTypes()));
+                Set<Class<?>> exceptions=Set.of(method.getExceptionTypes());
                 if (!exceptions.isEmpty()){
                     wrapWriter.write("        throws ");
                     int i=0;
@@ -384,15 +386,6 @@ public class WrapGenerator {
             pno++;
         }
         writer.write(")\n");
-    }
-    
-    private static Set<MethodDesc> getObjectMethods(){
-        Set<MethodDesc> methods=new HashSet<>();
-        for (Method method:Object.class.getDeclaredMethods()){
-            if (!Modifier.isPublic(method.getModifiers())) continue;
-            methods.add(new MethodDesc(method));
-        }
-        return Collections.unmodifiableSet(methods);
     }
     
     private static Set<Class<?>> getAllInterfaces(Class<?> type) {

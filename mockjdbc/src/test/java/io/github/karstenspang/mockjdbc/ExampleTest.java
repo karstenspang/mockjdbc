@@ -8,7 +8,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,7 +32,7 @@ public class ExampleTest {
         SQLException ex=new SQLException("db overloaded","00000",12520);
         ExceptionStep step1=new ExceptionStep(ex);
         PassThruStep step2=PassThruStep.instance();
-        MockDriver.setProgram(Arrays.asList(step1,step2));
+        MockDriver.setProgram(List.of(step1,step2));
         // Run the test
         Connection conn=Example.getConnection("jdbc:mock:noop:","user","pwd",2,0L);
         conn.close();
@@ -47,9 +46,9 @@ public class ExampleTest {
         SQLException disconnect=new SQLException("Connection broken");
         SQLException closeFail=new SQLException("close failed");
         
-        List<Step> program=Arrays.asList(
-            new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList( // Initial connection
-                new WrapperStep<Statement>(StatementWrap::new,Arrays.asList( // createStatement
+        List<Step> program=List.of(
+            new WrapperStep<Connection>(ConnectionWrap::new,List.of( // Initial connection
+                new WrapperStep<Statement>(StatementWrap::new,List.of( // createStatement
                     new ExceptionStep(disconnect), // execute
                     PassThruStep.instance() // Statement.close
                 )),
@@ -65,7 +64,7 @@ public class ExampleTest {
         conn=Example.checkOrConnect(conn,"jdbc:mock:noop","user","pwd");
         conn.close();
         List<LoggingEvent> events=exampleLogger.getLoggingEvents();
-        List<LoggingEvent> expectedEvents=Arrays.asList(
+        List<LoggingEvent> expectedEvents=List.of(
             LoggingEvent.info("Connecting to jdbc:mock:noop:"),
             LoggingEvent.debug("Checking connection"),
             LoggingEvent.error(disconnect,"Connection broken, closing"),
@@ -83,11 +82,11 @@ public class ExampleTest {
         try(Connection conn=DriverManager.getConnection("jdbc:noop:","user","pwd")){
             final SQLException ex1=new SQLException("1");
             final SQLException ex2=new SQLException("2");
-            final Connection wrappedConnection=new ConnectionWrap(conn,Arrays.asList(
-                new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
+            final Connection wrappedConnection=new ConnectionWrap(conn,List.of(
+                new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,List.of(
                     new ExceptionStep(ex1)
                 )),
-                new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
+                new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,List.of(
                     new ExceptionStep(ex2)
                 ))
             ));

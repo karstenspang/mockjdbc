@@ -10,8 +10,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -19,7 +18,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * {@link Driver} that accepts URL's starting with {@code jdbc:mock:}.
+ * Mock JDBC {@link Driver} delegating to a real JDBC driver.
+ * It accepts URL's starting with {@code jdbc:mock:}.
  * The rest of the URL will be prepended by {@code jdbc:} and a connection
  * will be opened by {@link DriverManager} with the resulting URL,
  * unless intercepted.<p>
@@ -53,7 +53,7 @@ public class MockDriver implements Driver {
     private final int minorVersion;
     private boolean logPassword;
     static{
-        emptySteps=new Program(Collections.emptyList());
+        emptySteps=new Program(List.of());
         instance=new MockDriver();
         try{
             DriverManager.registerDriver(instance);
@@ -204,7 +204,7 @@ public class MockDriver implements Driver {
             pomProperties=new Properties();
         }
         
-        logger.config("MockDriver version "+String.valueOf(pomProperties.getProperty("version")));
+        logger.info("MockDriver version "+String.valueOf(pomProperties.getProperty("version")));
         int[] versionParts=extractVersion(pomProperties.getProperty("version"));
         majorVersion=versionParts.length>=1?versionParts[0]:0;
         minorVersion=versionParts.length>=2?versionParts[1]:0;

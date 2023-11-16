@@ -29,18 +29,26 @@ a program, that can cause e.g. `Connection.createStatement()`
 to fail on the second attempt. The returned statements again
 can be wrapped, etc.
 
-Wraps exist for all interfaces in `java.sql` for which this is
+This implementation supports `Driver` only, not `DataSource`.
+This means that it does not support interfaces in `javax.sql`.
+Nor does it support the interfaces in `java.sql` that depend
+`DataSource`, i.e. `ConnectionBuilder`, `ShardingKey`, and
+`ShardingKeyBuilder`.
+
+Wraps exist for all other interfaces in `java.sql` for which this is
 meaningful, i.e. except `Driver`, `DriverNotification`, and
 `Wrapper`.
 
 ## Java and JDBC versions
-For maximum usefullness,
-it was decided to build this with Java 8, and thus the wraps
-implement only what is in JDBC 4.2. If used with java 9 and
-higher, new methods introduced in 4.3 will have their default
-implementation in the wraps, even if the wrapped driver has
-overridden the default implementation. Likewise, no wraps exist
-for new interfaces.
+Versions 1.x.x are compiled with JDK 8, and thus support JDBC 4.2.
+Versions 2.x.x are compiled with JDK 11, and thus support JDBC 4.3.
+
+The main difference is that the new `default` methods introduced in
+JDBC 4.3, e.g. `Statement.executeLargeUpdate`, fully work in 2.x.x.
+If using 1.x.x with JDBC 4.3, these methods have their default
+implementations in the wraps, even if the wrapped driver has
+overridden the default implementations. Also, calls to these methods
+are not intercepted.
 
 ## Dependency information
 To use for unit testing in Maven, add the following to you POM:
@@ -48,7 +56,7 @@ To use for unit testing in Maven, add the following to you POM:
 <dependency>
   <groupId>io.github.karstenspang</groupId>
   <artifactId>mockjdbc</artifactId>
-  <version>1.6.2</version>
+  <version>2.0.0</version>
   <scope>test</scope>
 </dependency>
 ```
@@ -113,7 +121,7 @@ import io.github.karstenspang.mockjdbc.wrap.ConnectionWrap;
 import io.github.karstenspang.mockjdbc.wrap.StatementWrap;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -129,14 +137,14 @@ public class ConnectorTest {
         SQLException ex=new SQLException("db overloaded","00000",12520);
         ExceptionStep step1=new ExceptionStep(ex);
         PassThruStep step2=PassThruStep.instance();
-        MockDriver.setProgram(Arrays.asList(step1,step2));
+        MockDriver.setProgram(List.of(step1,step2));
         // Run the test
         Connection conn=Example.getConnection("jdbc:mock:noop:","user","pwd",2,0L);
         conn.close();
     }
 }
 ```
-The built-in [no-op JDBC driver](#noopdriver) is used for unit testing,
+The built-in [no-op JDBC driver](#no-op-jdbc-driver) is used for unit testing,
 since we don't need an actual database in this case.
 
 It is not neccessary to include the second step, since the program will
@@ -194,9 +202,9 @@ public void testCheckConnection()
     SQLException disconnect=new SQLException("Connection broken");
     SQLException closeFail=new SQLException("close failed");
     
-    List<Step> program=Arrays.asList(
-        new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList( // Initial connection
-            new WrapperStep<Statement>(StatementWrap::new,Arrays.asList( // createStatement
+    List<Step> program=List.of(
+        new WrapperStep<Connection>(ConnectionWrap::new,List.of( // Initial connection
+            new WrapperStep<Statement>(StatementWrap::new,List.of( // createStatement
                 new ExceptionStep(disconnect), // execute
                 PassThruStep.instance() // Statement.close
             )),
@@ -212,7 +220,7 @@ public void testCheckConnection()
     conn=Example.checkOrConnect(conn,"jdbc:mock:noop:","user","pwd");
     conn.close();
     List<LoggingEvent> events=exampleLogger.getLoggingEvents();
-    List<LoggingEvent> expectedEvents=Arrays.asList(
+    List<LoggingEvent> expectedEvents=List.of(
         LoggingEvent.info("Connecting to jdbc:mock:noop:"),
         LoggingEvent.debug("Checking connection"),
         LoggingEvent.error(disconnect,"Connection broken, closing"),
@@ -306,11 +314,11 @@ public void testClose()
     try(Connection conn=DriverManager.getConnection("jdbc:noop:","user","pwd")){
         final SQLException ex1=new SQLException("1");
         final SQLException ex2=new SQLException("2");
-        final Connection wrappedConnection=new ConnectionWrap(conn,Arrays.asList(
-            new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
+        final Connection wrappedConnection=new ConnectionWrap(conn,List.of(
+            new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,List.of(
                 new ExceptionStep(ex1)
             )),
-            new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Arrays.asList(
+            new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,List.of(
                 new ExceptionStep(ex2)
             ))
         ));
@@ -337,7 +345,7 @@ and of course put the `mock` into your connection string.
 The result is that
 every JDBC method call will go through a wrap. The effect of this is
 that all calls will be logged with level
-[`Level.FINEST`](https://docs.oracle.com/javase/8/docs/api/java/util/logging/Level.html#FINEST),
+[`Level.FINEST`](https://docs.oracle.com/en/java/javase/11/docs/api/java.logging/java/util/logging/Level.html#FINEST),
  corresponding to
 `TRACE` in most logging backends. If you configure your backend to log
 `io.github.karstenspang.mockjdbc` at trace level, you will get a
@@ -353,5 +361,5 @@ interface in `java.sql`. These methods return other no-op objects.
 In this way, a scaffold is created on which programs can be put
 to create a mock.
 For details, please see 
-[the javadoc](https://javadoc.io/static/io.github.karstenspang/mockjdbc/1.6.2/io/github/karstenspang/mockjdbc/noop/package-summary.html)
+[the javadoc](https://javadoc.io/static/io.github.karstenspang/mockjdbc/2.0.0/io/github/karstenspang/mockjdbc/noop/package-summary.html)
 for the package.

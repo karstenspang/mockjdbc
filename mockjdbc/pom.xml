@@ -210,21 +210,6 @@
               </arguments>
             </configuration>
           </execution>
-          <execution>
-            <id>repair-dejavu-font</id>
-            <phase>site</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <executable>cp</executable>
-              <arguments>
-                <argument>-r</argument>
-                <argument>src/site/apidocs/resources</argument>
-                <argument>target/site/apidocs</argument>
-              </arguments>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
     </plugins>
@@ -299,27 +284,6 @@
             </executions>
           </plugin>
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>repair-dejavu-font-jar</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <configuration>
-                  <executable>cp</executable>
-                  <arguments>
-                    <argument>-r</argument>
-                    <argument>${basedir}/src/site/apidocs</argument>
-                    <argument>${project.build.directory}/apidocs</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
             <executions>
@@ -364,10 +328,6 @@
                     <argument>src/site/markdown/apidocs</argument>
                   </arguments>
                 </configuration>
-              </execution>
-              <execution>
-                <id>repair-dejavu-font</id>
-                <phase>none</phase>
               </execution>
               <execution>
                 <id>remove apidocs/index.md</id>

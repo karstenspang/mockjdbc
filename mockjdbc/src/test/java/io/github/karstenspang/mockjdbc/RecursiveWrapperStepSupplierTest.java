@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Wrapper;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -62,7 +61,7 @@ public class RecursiveWrapperStepSupplierTest {
             events.addAll(logger.getLoggingEvents());
         }
         assertEquals(
-            Arrays.asList(
+            List.of(
                 LoggingEvent.debug("Setting step provider RecursiveWrapperStepSupplier"),
                 LoggingEvent.trace("Apply RecursiveWrapperStep to DriverManager.getConnection(jdbc:noop:,{})"),
                 LoggingEvent.trace("Result: io.github.karstenspang.mockjdbc.wrap.ConnectionWrap:{wrapped:NoopConnection,stepSupplier:RecursiveWrapperStepSupplier}"),
@@ -93,11 +92,11 @@ public class RecursiveWrapperStepSupplierTest {
     @DisplayName("Extended interfaces come before the interface they extend in the search list")
     void testSequence()
     {
-        final Set<Class<?>> specialInterfaces=new HashSet<>(Arrays.asList(Wrapper.class,AutoCloseable.class));
+        final Set<Class<?>> specialInterfaces=new HashSet<>(List.of(Wrapper.class,AutoCloseable.class));
         List<Class<?>> interfaces=RecursiveWrapperStepSupplier.wrappedInterfaces();
         for (int i=0;i<interfaces.size();i++){
             Class<?> ifClass=interfaces.get(i);
-            Set<Class<?>> extendedInterfaces=new HashSet<>(Arrays.asList(ifClass.getInterfaces()));
+            Set<Class<?>> extendedInterfaces=new HashSet<>(List.of(ifClass.getInterfaces()));
             extendedInterfaces.removeAll(specialInterfaces);
             if (extendedInterfaces.isEmpty()) continue;
             assertEquals(1,extendedInterfaces.size(),"parents of "+ifClass.getSimpleName());

@@ -11,8 +11,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -24,9 +23,9 @@ public class WrapperStepTest {
     public void testUp()
         throws SQLException
     {
-        MockDriver.setProgram(Arrays.asList(
-            new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList(
-                new WrapperStep<Statement>(StatementWrap::new,Collections.emptyList())
+        MockDriver.setProgram(List.of(
+            new WrapperStep<Connection>(ConnectionWrap::new,List.of(
+                new WrapperStep<Statement>(StatementWrap::new,List.of())
             ))
         ));
         
@@ -40,9 +39,9 @@ public class WrapperStepTest {
     public void testDown()
         throws SQLException
     {
-        MockDriver.setProgram(Arrays.asList(
-            new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList(
-                new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,Collections.emptyList())
+        MockDriver.setProgram(List.of(
+            new WrapperStep<Connection>(ConnectionWrap::new,List.of(
+                new WrapperStep<PreparedStatement>(PreparedStatementWrap::new,List.of())
             ))
         ));
         

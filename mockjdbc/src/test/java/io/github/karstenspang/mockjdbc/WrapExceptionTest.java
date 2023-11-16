@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,8 +19,8 @@ public class WrapExceptionTest {
         throws SQLException
     {
         SQLException ex=new SQLException();
-        MockDriver.setProgram(Arrays.asList(
-            new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList(
+        MockDriver.setProgram(List.of(
+            new WrapperStep<Connection>(ConnectionWrap::new,List.of(
                 new ExceptionStep(ex)))));
         try(Connection conn=DriverManager.getConnection("jdbc:mock:noop:")){
             Properties prop=new Properties();
@@ -35,8 +35,8 @@ public class WrapExceptionTest {
         throws SQLException
     {
         SQLClientInfoException ex=new SQLClientInfoException();
-        MockDriver.setProgram(Arrays.asList(
-            new WrapperStep<Connection>(ConnectionWrap::new,Arrays.asList(
+        MockDriver.setProgram(List.of(
+            new WrapperStep<Connection>(ConnectionWrap::new,List.of(
                 new ExceptionStep(ex)))));
         try(Connection conn=DriverManager.getConnection("jdbc:mock:noop:")){
             Properties prop=new Properties();
