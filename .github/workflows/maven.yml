@@ -18,7 +18,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B install --file pom.xml "-Drevision=`echo ${{ github.ref_name }}|sed -e 's@/@-@'`-SNAPSHOT" -P jacocobadge
+      run: mvn -B install site --file pom.xml "-Drevision=`echo ${{ github.ref_name }}|sed -e 's@/@-@'`-SNAPSHOT" -P jacocobadge
     - name: Generate JaCoCo Badge
       uses: cicirello/jacoco-badge-generator@v2
       with:
