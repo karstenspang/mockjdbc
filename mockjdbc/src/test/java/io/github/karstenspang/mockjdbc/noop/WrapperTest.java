@@ -5,7 +5,7 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ public class WrapperTest {
     void testCanUnwrap(Class<?> clazz)
         throws SQLException
     {
-        PreparedStatement stmt=new PreparedStatementWrap(NoopPreparedStatement.instance(),Arrays.asList());
+        PreparedStatement stmt=new PreparedStatementWrap(NoopPreparedStatement.instance(),List.of());
         assertTrue(stmt.isWrapperFor(clazz),()->"isWrapper("+clazz+")");
         assertSame(NoopPreparedStatement.instance(),stmt.unwrap(clazz),()->"unwrap("+clazz+")");
     }
@@ -30,7 +30,7 @@ public class WrapperTest {
     void testCanNotUnwrap(Class<?> clazz)
         throws SQLException
     {
-        PreparedStatement stmt=new PreparedStatementWrap(NoopPreparedStatement.instance(),Arrays.asList());
+        PreparedStatement stmt=new PreparedStatementWrap(NoopPreparedStatement.instance(),List.of());
         assertFalse(stmt.isWrapperFor(clazz),()->"isWrapper("+clazz+")");
         SQLException ex=assertThrows(SQLException.class,()->stmt.unwrap(clazz),()->"unwrap("+clazz+")");
         assertInstanceOf(ClassCastException.class,ex.getCause());

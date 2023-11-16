@@ -28,11 +28,11 @@
  * {@link java.sql.Wrapper}, have this implementation of the
  * methods defined in {@link java.sql.Wrapper}:
  * <ul>
- *  <li>{@code isWrapperFor} returns true only if the argument
+ *  <li>{@link java.sql.Wrapper#isWrapperFor} returns true only if the argument
  *      is a superclass of the class.</li>
- *  <li>{@code unwrap} likewise returns {@code this} if the argument is a
- *      superclass of the class, and throws an {@link java.sql.SQLException}
- *      otherwise.</li>
+ *  <li>{@link java.sql.Wrapper#unwrap} likewise returns {@code (T)this}
+ *      if the argument is a superclass of the class, and throws an
+ *      {@link java.sql.SQLException} otherwise.</li>
  * </ul>
  */
 package io.github.karstenspang.mockjdbc.noop;

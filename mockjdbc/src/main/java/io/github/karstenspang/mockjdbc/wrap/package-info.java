@@ -26,7 +26,7 @@
  * matches {@link io.github.karstenspang.mockjdbc.Wrapper}&lt;{@link java.sql.Connection}&gt;.
  * For convenience, they also have constructors where the second argument
  * is an {@link Iterable}&lt;{@link io.github.karstenspang.mockjdbc.Step}&gt;.
- * <h3>Exceptions</h3>
+ * <h2>Exceptions</h2>
  * The vast majority of the methods of the interfaces in {@link java.sql}
  * are declared to throw {@link java.sql.SQLException}, and consequently, the
  * methods in {@link io.github.karstenspang.mockjdbc.Step} are declared likewise. In case a method is not
@@ -39,7 +39,7 @@
  * {@link java.sql.SQLClientInfoException}, then that exception is delivered
  * as expected, but if any other {@link java.sql.SQLException} is thrown
  * then an {@link java.lang.UnsupportedOperationException} is delivered.
- * <h3>Methods Defined in {@link java.lang.Object}</h3>
+ * <h2>Methods Defined in {@link java.lang.Object}</h2>
  * The methods defined in {@link java.lang.Object} are not implemented in the
  * generated wraps, even if defined in the interface. The methods
  * {@link java.lang.Object#toString()}, {@link java.lang.Object#hashCode()},

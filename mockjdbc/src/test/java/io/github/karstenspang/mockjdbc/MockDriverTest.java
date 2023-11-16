@@ -6,7 +6,6 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,7 +39,7 @@ public class MockDriverTest {
         assertEquals(0,driver.getMajorVersion(),"major");
         assertEquals(0,driver.getMinorVersion(),"minor");
         List<LoggingEvent> events=drvLogger.getLoggingEvents();
-        List<LoggingEvent> expected=Arrays.asList(
+        List<LoggingEvent> expected=List.of(
             LoggingEvent.warn("Could not load property file nosuchfile"),
             LoggingEvent.info("MockDriver version null")
         );
@@ -121,7 +120,7 @@ public class MockDriverTest {
     {
         SQLException myex=new SQLException("my exception");
         ExceptionStep step=new ExceptionStep(myex);
-        List<Step> program=Arrays.asList(step);
+        List<Step> program=List.of(step);
         MockDriver.setProgram(program);
         SQLException ex=assertThrows(SQLException.class,()->DriverManager.getConnection("jdbc:mock:noop:",new Properties()));
         assertEquals(myex,ex);
@@ -145,7 +144,7 @@ public class MockDriverTest {
         throws Exception
     {
         final SQLException ex=new SQLException("test");
-        MockDriver.setProgram(Arrays.asList(new ExceptionStep(ex)));
+        MockDriver.setProgram(List.of(new ExceptionStep(ex)));
         TestThread t=new TestThread(()->{
             SQLException thrown=assertThrows(SQLException.class,()->{
                 Connection conn=DriverManager.getConnection("jdbc:mock:noop:",new Properties());
@@ -175,7 +174,7 @@ public class MockDriverTest {
             messages.add(event.getMessage());
         }
         
-        List<String> expected=Arrays.asList(
+        List<String> expected=List.of(
             "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{password=[HIDDEN]})",
             "Result: NoopConnection"
         );
@@ -200,7 +199,7 @@ public class MockDriverTest {
             messages.add(event.getMessage());
         }
         
-        List<String> expected=Arrays.asList(
+        List<String> expected=List.of(
             "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{password=secret})",
             "Result: NoopConnection"
         );
@@ -223,7 +222,7 @@ public class MockDriverTest {
             messages.add(event.getMessage());
         }
         
-        List<String> expected=Arrays.asList(
+        List<String> expected=List.of(
             "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,{})",
             "Result: NoopConnection"
         );
@@ -245,7 +244,7 @@ public class MockDriverTest {
             messages.add(event.getMessage());
         }
         
-        List<String> expected=Arrays.asList(
+        List<String> expected=List.of(
             "Apply PassThruStep to DriverManager.getConnection(jdbc:noop:,null)",
             "Result: NoopConnection"
         );
