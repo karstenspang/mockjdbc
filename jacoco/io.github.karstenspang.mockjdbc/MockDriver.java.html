@@ -10,8 +10,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -19,7 +18,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * {@link Driver} that accepts URL's starting with {@code jdbc:mock:}.
+ * Mock JDBC {@link Driver} delegating to a real JDBC driver.
+ * It accepts URL's starting with {@code jdbc:mock:}.
  * The rest of the URL will be prepended by {@code jdbc:} and a connection
  * will be opened by {@link DriverManager} with the resulting URL,
  * unless intercepted.&lt;p&gt;
@@ -53,7 +53,7 @@ public class MockDriver implements Driver {
     private final int minorVersion;
     private boolean logPassword;
     static{
-<span class="fc" id="L56">        emptySteps=new Program(Collections.emptyList());</span>
+<span class="fc" id="L56">        emptySteps=new Program(List.of());</span>
 <span class="fc" id="L57">        instance=new MockDriver();</span>
         try{
 <span class="fc" id="L59">            DriverManager.registerDriver(instance);</span>
@@ -204,7 +204,7 @@ public class MockDriver implements Driver {
 <span class="fc" id="L204">            pomProperties=new Properties();</span>
 <span class="fc" id="L205">        }</span>
         
-<span class="fc" id="L207">        logger.config(&quot;MockDriver version &quot;+String.valueOf(pomProperties.getProperty(&quot;version&quot;)));</span>
+<span class="fc" id="L207">        logger.info(&quot;MockDriver version &quot;+String.valueOf(pomProperties.getProperty(&quot;version&quot;)));</span>
 <span class="fc" id="L208">        int[] versionParts=extractVersion(pomProperties.getProperty(&quot;version&quot;));</span>
 <span class="fc bfc" id="L209" title="All 2 branches covered.">        majorVersion=versionParts.length&gt;=1?versionParts[0]:0;</span>
 <span class="fc bfc" id="L210" title="All 2 branches covered.">        minorVersion=versionParts.length&gt;=2?versionParts[1]:0;</span>
