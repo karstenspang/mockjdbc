@@ -24,6 +24,13 @@
  * {@link io.github.karstenspang.mockjdbc.ConstantStep},
  * {@link io.github.karstenspang.mockjdbc.ExceptionStep}, etc.
  * <p>
+ * {@link Object#toString} is overrridden, returning the unqualified
+ * class name, e.g.
+ * {@link io.github.karstenspang.mockjdbc.noop.NoopConnection#toString}
+ * returns {@code "NoopConnection"}.
+ * No other methods in {@link Object} are overridden. This implies that
+ * the instance of a class is equal only to itself.
+ * <p>
  * Furthermore, classes that implement interfaces extending
  * {@link java.sql.Wrapper}, have this implementation of the
  * methods defined in {@link java.sql.Wrapper}:

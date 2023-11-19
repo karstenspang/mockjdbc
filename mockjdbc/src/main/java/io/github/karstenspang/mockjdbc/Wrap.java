@@ -11,7 +11,6 @@ import java.util.logging.Logger;
  * {@link Supplier} is applied to the method call.
  */
 public class Wrap {
-    static Logger logger=Logger.getLogger(Wrap.class.getName());
     /** The wrapped object */
     protected final Object wrapped;
     /** Steps to apply */
@@ -51,14 +50,14 @@ public class Wrap {
     }
     
     /**
-     * Check if the wrapped value is equal to another object.
+     * Check if the wrapped object is equal to another object.
      * @param other object to check. If an instance of {@link Wrap},
-     *        then its wrapped value is checked.
+     *        recursively, then its wrapped value is checked.
      * @return {@code true} if matched, {@code false} otherwise.
      */
     @Override
     public boolean equals(Object other){
-        if (other instanceof Wrap) other=((Wrap)other).wrapped;
+        while (other instanceof Wrap) other=((Wrap)other).wrapped;
         return wrapped.equals(other);
     }
     

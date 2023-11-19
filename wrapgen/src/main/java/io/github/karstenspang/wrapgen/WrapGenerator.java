@@ -182,9 +182,10 @@ public class WrapGenerator {
             }
             if (getAllInterfaces(ifClass).contains(Wrapper.class)){
                 noopWriter.write("    /**\n");
-                noopWriter.write("     * @param iface Class to cast to\n");
-                noopWriter.write("     * @return {@code true} if {@code this} can be cast to the class represented\n");
-                noopWriter.write("     *         by {@code iface}, otherwise {@code false}.\n");
+                noopWriter.write("     * Checks whether the the specified class or interface is a superclass of {@link Noop"+ifClass.getSimpleName()+"}.\n");
+                noopWriter.write("     * @param iface Class or interface to check\n");
+                noopWriter.write("     * @return {@code true} if {@code iface} is a superclass of\n");
+                noopWriter.write("     *         {@link Noop"+ifClass.getSimpleName()+"}, otherwise {@code false}.\n");
                 noopWriter.write("     */\n");
                 noopWriter.write("    @Override\n");
                 noopWriter.write("    public boolean isWrapperFor​(Class<?> iface)\n");
@@ -201,7 +202,7 @@ public class WrapGenerator {
                 noopWriter.write("     * Casts {@code this} to {@code T}\n");
                 noopWriter.write("     * @param <T> class to cast to\n");
                 noopWriter.write("     * @param iface {@link Class} to cast to\n");
-                noopWriter.write("     * @return {@code this}\n");
+                noopWriter.write("     * @return {@code (T)this}\n");
                 noopWriter.write("     * @throws java.sql.SQLException if {@code T} is not a superclass of {@link Noop"+ifClass.getSimpleName()+"}.\n");
                 noopWriter.write("     *         The cause is a {@link ClassCastException}.\n");
                 noopWriter.write("     */\n");

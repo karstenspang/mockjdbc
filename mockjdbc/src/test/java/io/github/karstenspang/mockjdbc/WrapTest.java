@@ -40,6 +40,14 @@ public class WrapTest {
     }
     
     @Test
+    @DisplayName("equals compares with the wrapped object recusively if the target is a Wrap")
+    public void testEqualsRecursive()
+    {
+        Wrap wrap=new Wrap(Integer.valueOf(1),List.of());
+        assertTrue(wrap.equals(new Wrap(new Wrap(Integer.valueOf(1),List.of()),List.of())));
+    }
+    
+    @Test
     @DisplayName("toString returns the expected value")
     public void testToString()
     {
