@@ -28,7 +28,7 @@ import com.github.valfirst.slf4jtest.TestLoggerFactory;
 public class RecursiveWrapperStepSupplierTest {
     @Test
     @DisplayName("A Connection and all of its sub-objects are wrapped")
-    public void testVersion()
+    public void testWrap()
         throws SQLException
     {
         TestLogger[] loggers={
@@ -37,6 +37,8 @@ public class RecursiveWrapperStepSupplierTest {
             TestLoggerFactory.getTestLogger(StatementWrap.class),
             TestLoggerFactory.getTestLogger(ResultSetWrap.class)
         };
+        // Make sure that the driver is loaded, so we know it will not log that.
+        MockDriver.logPassword();
         for (TestLogger logger:loggers){
             logger.clear();
         }
