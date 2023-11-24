@@ -11,7 +11,6 @@ import java.util.logging.Logger;
  * {@link Supplier} is applied to the method call.
  */
 public class Wrap {
-<span class="fc" id="L14">    static Logger logger=Logger.getLogger(Wrap.class.getName());</span>
     /** The wrapped object */
     protected final Object wrapped;
     /** Steps to apply */
@@ -23,8 +22,8 @@ public class Wrap {
      * @throws NullPointerException if {@code wrapped} or {@code stepSupplier} is {@code null}.
      */
     public Wrap(Object wrapped,Supplier&lt;Step&gt; stepSupplier){
-<span class="fc" id="L26">        this(Wrap.class.getName(),wrapped,stepSupplier);</span>
-<span class="fc" id="L27">    }</span>
+<span class="fc" id="L25">        this(Wrap.class.getName(),wrapped,stepSupplier);</span>
+<span class="fc" id="L26">    }</span>
     
     /**
      * Wrap an object
@@ -33,8 +32,8 @@ public class Wrap {
      * @throws NullPointerException if {@code wrapped} or {@code steps} is {@code null}.
      */
     public Wrap(Object wrapped,Iterable&lt;Step&gt; steps){
-<span class="fc" id="L36">        this(wrapped,new Program(steps));</span>
-<span class="fc" id="L37">    }</span>
+<span class="fc" id="L35">        this(wrapped,new Program(steps));</span>
+<span class="fc" id="L36">    }</span>
     
     /**
      * Wrap an object
@@ -43,23 +42,23 @@ public class Wrap {
      * @param stepSupplier Supplier of steps to wrap the object with.
      * @throws NullPointerException if {@code wrapped} or {@code stepSupplier} is {@code null}.
      */
-<span class="fc" id="L46">    protected Wrap(String className,Object wrapped,Supplier&lt;Step&gt; stepSupplier){</span>
-<span class="fc" id="L47">        this.wrapped=Objects.requireNonNull(wrapped,&quot;wrapped is null&quot;);</span>
-<span class="fc" id="L48">        this.stepSupplier=Objects.requireNonNull(stepSupplier,&quot;stepSupplier is null&quot;);</span>
-<span class="fc" id="L49">        Logger logger=Logger.getLogger(className);</span>
-<span class="fc" id="L50">        logger.fine(&quot;Wrapping &quot;+String.valueOf(wrapped)+&quot; in &quot;+className+ &quot; with step supplier &quot;+String.valueOf(stepSupplier));</span>
-<span class="fc" id="L51">    }</span>
+<span class="fc" id="L45">    protected Wrap(String className,Object wrapped,Supplier&lt;Step&gt; stepSupplier){</span>
+<span class="fc" id="L46">        this.wrapped=Objects.requireNonNull(wrapped,&quot;wrapped is null&quot;);</span>
+<span class="fc" id="L47">        this.stepSupplier=Objects.requireNonNull(stepSupplier,&quot;stepSupplier is null&quot;);</span>
+<span class="fc" id="L48">        Logger logger=Logger.getLogger(className);</span>
+<span class="fc" id="L49">        logger.fine(&quot;Wrapping &quot;+String.valueOf(wrapped)+&quot; in &quot;+className+ &quot; with step supplier &quot;+String.valueOf(stepSupplier));</span>
+<span class="fc" id="L50">    }</span>
     
     /**
-     * Check if the wrapped value is equal to another object.
+     * Check if the wrapped object is equal to another object.
      * @param other object to check. If an instance of {@link Wrap},
-     *        then its wrapped value is checked.
+     *        recursively, then its wrapped value is checked.
      * @return {@code true} if matched, {@code false} otherwise.
      */
     @Override
     public boolean equals(Object other){
-<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (other instanceof Wrap) other=((Wrap)other).wrapped;</span>
-<span class="fc" id="L62">        return wrapped.equals(other);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        while (other instanceof Wrap) other=((Wrap)other).wrapped;</span>
+<span class="fc" id="L61">        return wrapped.equals(other);</span>
     }
     
     /**
@@ -67,7 +66,7 @@ public class Wrap {
      * @return The hash code of the wrapped object.
      */
     @Override
-<span class="fc" id="L70">    public int hashCode(){return wrapped.hashCode();}</span>
+<span class="fc" id="L69">    public int hashCode(){return wrapped.hashCode();}</span>
     
     /**
      * Get the string representation
@@ -76,9 +75,9 @@ public class Wrap {
      */
     @Override
     public String toString(){
-<span class="fc" id="L79">        return getClass().getName()+</span>
-<span class="fc" id="L80">            &quot;:{wrapped:&quot;+wrapped.toString()+</span>
-<span class="fc" id="L81">            &quot;,stepSupplier:&quot;+stepSupplier.toString()+&quot;}&quot;;</span>
+<span class="fc" id="L78">        return getClass().getName()+</span>
+<span class="fc" id="L79">            &quot;:{wrapped:&quot;+wrapped.toString()+</span>
+<span class="fc" id="L80">            &quot;,stepSupplier:&quot;+stepSupplier.toString()+&quot;}&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
